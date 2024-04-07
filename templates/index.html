@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AInclusive</title>
+    <style>
+        .container {
+            display: flex;
+            flex-direction: column;
+        }
+        /* Apply half-width constraint to all text sections */
+        .half-width-text {
+            width: 50%;
+        }
+        .text-section, .upper-section {
+            margin-bottom: 20px; /* Adds space between sections */
+        }
+        .image-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px; /* Space between images */
+        }
+        .image-container img {
+            width: 10vw; /* Image width as percentage of the viewport width */
+            height: auto; /* Maintains aspect ratio */
+            margin-bottom: 10px; /* Adds space below each image */
+        }
+    </style>
+</head>
+<body>
+    <h1>AInclusive</h1>
+    <div class="container">
+        <!-- Upper Text Sections -->
+        <div class="half-width-text">
+            <div class="upper-section">
+                <h2>Original Text</h2>
+                <p>{{ text }}</p>
+            </div>
+            <div class="upper-section">
+                <h2>Simplified Summary</h2>
+                <p>{{ summaries | safe }}</p>
+            </div>
+        </div>
+
+        <!-- Major Ideas Section -->
+        <div class="half-width-text">
+            <div class="text-section">
+                <h2>Major Ideas</h2>
+                <p>{{ major_ideas | safe }}</p>
+            </div>
+            <!-- Major Ideas Images -->
+            <div class="image-container">
+                {% for image_name in image_names %}
+                    {% if image_name.startswith('ideas_') %}
+                        <img src="{{ url_for('static', filename='images/hedgehog/' + image_name) }}" alt="Image for Major Ideas">
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- New Words Section -->
+        <div class="half-width-text">
+            <div class="text-section">
+                <h2>New Words</h2>
+                <pre style="font-family: inherit;">{{ new_words | safe }}</pre>
+            </div>
+            <!-- New Words Images -->
+            <div class="image-container">
+                {% for image_name in image_names %}
+                    {% if image_name.startswith('words_') %}
+                        <img src="{{ url_for('static', filename='images/hedgehog/' + image_name) }}" alt="Image for New Words">
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
