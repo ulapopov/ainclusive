@@ -8,8 +8,6 @@ import requests
 from io import BytesIO
 from datetime import datetime
 from PIL import Image as PILImage
-from PIL import ImageTk
-import tkinter as tk
 import PyPDF2
 import openai
 from openai import OpenAI
