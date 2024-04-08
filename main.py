@@ -1,5 +1,6 @@
 # Imports
 import os
+import json
 import sys
 import re
 import time
@@ -16,6 +17,7 @@ from flask import Flask, render_template, request
 from flask_socketio import SocketIO
 from logging import StreamHandler
 from google.cloud import storage
+from google.oauth2 import service_account
 
 app = Flask(__name__)
 
@@ -24,6 +26,21 @@ socketio = SocketIO(app)
 on_heroku = os.environ.get('HEROKU', 'False') == 'True'
 
 bucket_name = 'ainclusive'
+
+if on_heroku:
+    # On Heroku, use GCP credentials from environment variable
+    from google.oauth2 import service_account
+    import json
+
+    creds_json = os.environ.get("GCP_CREDENTIALS_JSON")
+    if creds_json:
+        creds_dict = json.loads(creds_json)
+        credentials = service_account.Credentials.from_service_account_info(creds_dict)
+    else:
+        raise Exception('GCP credentials not found in environment variable.')
+else:
+    # Locally, use the default credentials
+    credentials = None
 
 # Setting API Key
 openai.api_key = os.getenv('OPENAI_API_KEY_TAROT')
