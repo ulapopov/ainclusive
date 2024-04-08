@@ -42,6 +42,18 @@ else:
     # Locally, use the default credentials
     credentials = None
 
+def create_storage_client():
+    if on_heroku:
+        credentials = get_gcp_credentials()
+        return storage.Client(credentials=credentials)
+    else:
+        # Locally, we assume default credentials are set up properly (gcloud auth application-default login)
+        return storage.Client()
+
+# Now, whenever you need a storage client, call create_storage_client():
+storage_client = create_storage_client()
+
+
 # Setting API Key
 openai.api_key = os.getenv('OPENAI_API_KEY_TAROT')
 client = OpenAI(
