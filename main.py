@@ -15,6 +15,9 @@ from datetime import datetime
 from flask import Flask, render_template, request
 from flask_socketio import SocketIO
 from logging import StreamHandler
+from google.cloud import storage
+
+on_heroku = 'HEROKU' in os.environ
 
 app = Flask(__name__)
 socketio = SocketIO(app)
@@ -24,6 +27,16 @@ openai.api_key = os.getenv('OPENAI_API_KEY_TAROT')
 client = OpenAI(
     api_key=openai.api_key,
 )
+
+# Function to generate GCS URL
+def gcs_url(bucket_name, path):
+    return f"https://storage.googleapis.com/{bucket_name}/{path}"
+
+# Check if running on Heroku
+on_heroku = 'HEROKU' in os.environ
+
+# Define your GCS bucket name
+bucket_name = 'ainclusive'
 
 # Style for image generation
 style = """The style of the image is characterized by its very minimalistic approach, focusing on simplicity and clarity 
@@ -161,17 +174,38 @@ def generate_and_save_images(prompts, drive_folder_path="static/images"):
             traceback.print_exc()
     return saved_images
 
+def fetch_text_content_from_gcs(bucket_name, file_path):
+    storage_client = storage.Client()
+    bucket = storage_client.get_bucket(bucket_name)
+    blob = bucket.blob(file_path)
+    return blob.download_as_string().decode('utf-8')
+
 @app.route('/')
 def index():
-    text = get_original_text()
-    major_ideas = get_major_ideas(text)
-    summaries = get_summary(major_ideas)
-    new_words = get_new_words(summaries)
-    print(new_words)
-    image_names = [img for img in os.listdir('static/images/hedgehog') if img.endswith(('.png', '.jpg', '.jpeg', '.webp'))]
-    major_ideas_html = major_ideas.replace('\n', '<br>')
-    return render_template('index.html', text=text, major_ideas=major_ideas_html,
-                           summaries=summaries, new_words=new_words, image_names=image_names)
+    bucket_name = 'ainclusive'
+    if 'HEROKU' in os.environ:
+        # Use GCS URLs for Heroku
+        image_names = [generate_gcs_url(f'hedgehog/images/{name}') for name in os.listdir('/Users/ula/PycharmProjects/AInclusive/static/images/hedgehog')]
+        # Assuming you have a method to fetch the text content from GCS
+        text_content = fetch_text_content_from_gcs('hedgehog/original_text.txt')
+        major_ideas_content = fetch_text_content_from_gcs('hedgehog/major_ideas.txt')
+        new_words_content = fetch_text_content_from_gcs('hedgehog/new_words.txt')
+        text_summary_content = fetch_text_content_from_gcs('hedgehog/text_summary.txt')
+    else:
+        # Local development paths
+        image_names = [name for name in os.listdir('/Users/ula/PycharmProjects/AInclusive/static/images/hedgehog') if name.startswith(('ideas_', 'words_'))]
+        with open("/Users/ula/PycharmProjects/AInclusive/HedgeHog/original_text.txt", "r") as file:
+            text_content = file.read()
+        with open("/Users/ula/PycharmProjects/AInclusive/HedgeHog/major_ideas.txt", "r") as file:
+            major_ideas_content = file.read().split('\n')
+        with open("/Users/ula/PycharmProjects/AInclusive/HedgeHog/new_words.txt", "r") as file:
+            new_words_content = file.read()
+        with open("/Users/ula/PycharmProjects/AInclusive/HedgeHog/text_summary.txt", "r") as file:
+            text_summary_content = file.read()
+
+    # Pass the variables to your template
+    return render_template('index.html', image_names=image_names, text=text_content, major_ideas=major_ideas_content, new_words=new_words_content, summaries=text_summary_content)
+
 
 if __name__ == '__main__':
     socketio.run(app, debug=True, allow_unsafe_werkzeug=True)

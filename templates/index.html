@@ -47,7 +47,11 @@
         <div class="half-width-text">
             <div class="text-section">
                 <h2>Major Ideas</h2>
-                <p>{{ major_ideas | safe }}</p>
+                {% for idea in major_ideas %}
+                    {% if idea.strip() %}
+                        <p>{{ idea.strip() }}</p>
+                    {% endif %}
+                {% endfor %}
             </div>
             <!-- Major Ideas Images -->
             <div class="image-container">
