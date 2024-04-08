@@ -17,10 +17,13 @@ from flask_socketio import SocketIO
 from logging import StreamHandler
 from google.cloud import storage
 
-on_heroku = 'HEROKU' in os.environ
-
 app = Flask(__name__)
+
 socketio = SocketIO(app)
+
+on_heroku = os.environ.get('HEROKU', 'False') == 'True'
+
+bucket_name = 'ainclusive'
 
 # Setting API Key
 openai.api_key = os.getenv('OPENAI_API_KEY_TAROT')
@@ -28,15 +31,16 @@ client = OpenAI(
     api_key=openai.api_key,
 )
 
+def list_gcs_files(bucket_name, prefix):
+    storage_client = storage.Client()
+    blobs = storage_client.list_blobs(bucket_name, prefix=prefix)
+    return [blob.name for blob in blobs]
+
 # Function to generate GCS URL
 def gcs_url(bucket_name, path):
     return f"https://storage.googleapis.com/{bucket_name}/{path}"
 
-# Check if running on Heroku
-on_heroku = 'HEROKU' in os.environ
 
-# Define your GCS bucket name
-bucket_name = 'ainclusive'
 
 # Style for image generation
 style = """The style of the image is characterized by its very minimalistic approach, focusing on simplicity and clarity 
@@ -185,8 +189,8 @@ def index():
     bucket_name = 'ainclusive'
     if 'HEROKU' in os.environ:
         # Use GCS URLs for Heroku
-        image_names = [generate_gcs_url(f'hedgehog/images/{name}') for name in os.listdir('/Users/ula/PycharmProjects/AInclusive/static/images/hedgehog')]
-        # Assuming you have a method to fetch the text content from GCS
+        image_files = list_gcs_files(bucket_name, 'hedgehog/images/')
+        image_names = [generate_gcs_url(bucket_name, file_path) for file_path in image_files]
         text_content = fetch_text_content_from_gcs('hedgehog/original_text.txt')
         major_ideas_content = fetch_text_content_from_gcs('hedgehog/major_ideas.txt')
         new_words_content = fetch_text_content_from_gcs('hedgehog/new_words.txt')
