@@ -4,98 +4,80 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AInclusive</title>
-     <style>
-        .container {
-            display: flex;
-            flex-direction: column;
+    <style>
+        body {
+            font-family: Arial, sans-serif;
         }
-        .row {
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-auto-rows: auto;
+            gap: 20px;
+            margin: 20px;
+        }
+        .text-content, .ideas, .words {
+            grid-column: 1;
+        }
+        .main-image {
+            grid-column: 2;
+            grid-row: 1 / span 2; /* This can be adjusted as needed */
+        }
+        .ideas .image-container, .words .image-container {
             display: flex;
             flex-wrap: wrap;
-            align-items: flex-start;
+            gap: 10px; /* Adjust spacing between tiny images */
         }
-        .half-width-text, .half-width-image {
-            flex: 1;
-            min-width: 300px; /* Adjust based on your minimum width requirement */
+        .ideas .image-container img, .words .image-container img {
+            width: 10vw; /* Size for smaller images */
+            height: auto;
         }
-        .text-section, .upper-section {
-            margin-bottom: 20px; /* Adds space between sections */
-        }
-        .image-container img, .half-width-image img {
-            width: 100%; /* Ensures image fills the container */
+        .main-image img {
+            width: 100%; /* Full width of its container */
             height: auto; /* Maintains aspect ratio */
-            margin-bottom: 10px; /* Adds space below each image */
-        }
-        .half-width-image {
-            display: flex;
-            justify-content: center; /* Centers image in the container if it's not full width */
-            align-items: center; /* Aligns image vertically */
         }
     </style>
-
 </head>
 <body>
     <h1>AInclusive</h1>
-    <div class="container">
-        <!-- Upper Content Row -->
-        <div class="row">
-            <!-- Upper Text Sections -->
-            <div class="half-width-text">
-                <div class="upper-section">
-                    <h2>Original Text</h2>
-                    <p>{{ text }}</p>
-                </div>
-                <div class="upper-section">
-                    <h2>Simplified Summary</h2>
-                    <p>{{ summaries | safe }}</p>
-                </div>
+    <div class="grid-container">
+        <!-- Combined Text Sections -->
+        <div class="text-content">
+            <div class="upper-section">
+                <h2>Original Text</h2>
+                <p>{{ text }}</p>
             </div>
-            <!-- Upper Image Section -->
-            <div class="half-width-image">
-                <!-- Main Image -->
-                {% for image_url in image_names %}
-                    {% set filename = image_url.split('/')[-1] %}
-                    {% if filename.startswith('main_') %}
-                        <img src="{{ image_url }}" alt="Main Image">
-                    {% endif %}
+            <div class="upper-section">
+                <h2>Simplified Summary</h2>
+                <p>{{ summaries | safe }}</p>
+            </div>
+        </div>
+
+        <!-- Main Image -->
+        <div class="main-image">
+            <!-- Assuming you pass the correct URL for the main image in your Flask context -->
+            <img src="{{ main_image_url }}" alt="Main Image">
+        </div>
+
+        <!-- Ideas Section with Tiny Images -->
+        <div class="ideas">
+            <h2>Major Ideas</h2>
+            {% for idea in major_ideas %}
+            <p>{{ idea }}</p>
+            {% endfor %}
+            <div class="image-container">
+                {% for image_url in image_names if 'ideas_' in image_url %}
+                <img src="{{ image_url }}" alt="Idea Image">
                 {% endfor %}
             </div>
         </div>
 
-        <!-- Major Ideas Section -->
-        <div class="half-width-text">
-            <div class="text-section">
-                <h2>Major Ideas</h2>
-                {% for idea in major_ideas %}
-                    {% if idea.strip() %}
-                        <p>{{ idea.strip() }}</p>
-                    {% endif %}
-                {% endfor %}
-            </div>
-            <!-- Major Ideas Images -->
+        <!-- Words Section with Tiny Images -->
+        <div class="words">
+            <h2>New Words</h2>
+            <pre>{{ new_words | safe }}</pre>
             <div class="image-container">
-                {% for image_url in image_names %}
-                    {% set filename = image_url.split('/')[-1] %}
-                    {% if 'ideas_' in filename %}
-                        <img src="{{ image_url }}" alt="Image for Major Ideas">
-                    {% endif %}
-                {% endfor %}
-            </div>
-        </div>
-
-        <!-- New Words Section -->
-        <div class="half-width-text">
-            <div class="text-section">
-                <h2>New Words</h2>
-                <pre style="font-family: inherit;">{{ new_words | safe }}</pre>
-            </div>
-            <!-- New Words Images -->
-            <div class="image-container">
-                {% for image_url in image_names %}
-                    {% set filename = image_url.split('/')[-1] %}
-                    {% if 'words_' in filename %}
-                        <img src="{{ image_url }}" alt="Image for New Words">
-                    {% endif %}
+                {% for image_url in image_names if 'words_' in image_url %}
+                <img src="{{ image_url }}" alt="Word Image">
                 {% endfor %}
             </div>
         </div>
