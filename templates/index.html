@@ -70,13 +70,15 @@
                 <pre style="font-family: inherit;">{{ new_words | safe }}</pre>
             </div>
             <!-- New Words Images -->
-            <div class="image-container">
-                {% for image_name in image_names %}
-                    {% if image_name.startswith('words_') %}
-                        <img src="{{ url_for('static', filename='images/hedgehog/' + image_name) }}" alt="Image for New Words">
-                    {% endif %}
-                {% endfor %}
-            </div>
+        <div class="image-container">
+            {% for image_url in image_names %}
+                {% set filename = image_url.split('/')[-1] %}
+                {% if 'words_' in filename %}
+                    <img src="{{ image_url }}" alt="Image for New Words">
+                {% endif %}
+            {% endfor %}
+        </div>
+
         </div>
     </div>
 </body>
