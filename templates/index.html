@@ -55,9 +55,10 @@
             </div>
             <!-- Major Ideas Images -->
             <div class="image-container">
-                {% for image_name in image_names %}
-                    {% if image_name.startswith('ideas_') %}
-                        <img src="{{ url_for('static', filename='images/hedgehog/' + image_name) }}" alt="Image for Major Ideas">
+                {% for image_url in image_names %}
+                    {% set filename = image_url.split('/')[-1] %}
+                    {% if 'ideas_' in filename %}
+                        <img src="{{ image_url }}" alt="Image for New Words">
                     {% endif %}
                 {% endfor %}
             </div>
