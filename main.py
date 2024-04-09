@@ -27,16 +27,17 @@ on_heroku = os.environ.get('HEROKU', 'False') == 'True'
 
 bucket_name = 'ainclusive'
 
-if on_heroku:
-    creds_json = os.environ.get("GCP_CREDENTIALS")
-    if creds_json:
-        creds_dict = json.loads(creds_json)
-        credentials = service_account.Credentials.from_service_account_info(creds_dict)
-    else:
-        raise Exception('GCP credentials not found in environment variable.')
-else:
-    # Locally, use the default credentials
-    credentials = None
+def get_gcp_credentials():
+    if on_heroku:
+        creds_json = os.environ.get("GCP_CREDENTIALS")
+        if creds_json:
+            creds_dict = json.loads(creds_json)
+            return service_account.Credentials.from_service_account_info(creds_dict)
+        else:
+            raise Exception('GCP credentials not found in environment variable.')
+    # If not on Heroku, return None to use default credentials
+    return None
+
 
 def create_storage_client():
     if on_heroku:
