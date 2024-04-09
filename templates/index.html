@@ -55,8 +55,9 @@
         <!-- Main Image -->
         <div class="main-image">
             {% for image_url in image_names %}
-                {% if image_url.startswith('main_') %}
+                {% if 'main_' in image_url %}
                     <img src="{{ image_url }}" alt="Main Image">
+                    {% break %} <!-- If only one main image is expected, break after finding it -->
                 {% endif %}
             {% endfor %}
         </div>
