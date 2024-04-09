@@ -12,7 +12,7 @@ import json
 app = Flask(__name__)
 
 def get_gcp_credentials():
-    credentials_json = os.getenv('GOOGLE_CREDENTIALS')
+    credentials_json = os.getenv('GCP_CREDENTIALS')
     if credentials_json:
         credentials_dict = json.loads(credentials_json)
         credentials = service_account.Credentials.from_service_account_info(credentials_dict)
