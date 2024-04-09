@@ -223,10 +223,10 @@ def index():
         # Use GCS URLs for Heroku
         image_files = list_gcs_files(bucket_name, 'hedgehog/images/')
         image_names = [generate_gcs_url(bucket_name, file_path) for file_path in image_files]
-        text_content = fetch_text_content_from_gcs('hedgehog/original_text.txt')
-        major_ideas_content = fetch_text_content_from_gcs('hedgehog/major_ideas.txt')
-        new_words_content = fetch_text_content_from_gcs('hedgehog/new_words.txt')
-        text_summary_content = fetch_text_content_from_gcs('hedgehog/text_summary.txt')
+        text_content = fetch_text_content_from_gcs(bucket_name, 'hedgehog/original_text.txt')
+        major_ideas_content = fetch_text_content_from_gcs(bucket_name, 'hedgehog/major_ideas.txt')
+        new_words_content = fetch_text_content_from_gcs(bucket_name, 'hedgehog/new_words.txt')
+        text_summary_content = fetch_text_content_from_gcs(bucket_name, 'hedgehog/text_summary.txt')
     else:
         # Local development paths
         image_names = [name for name in os.listdir('/Users/ula/PycharmProjects/AInclusive/static/images/hedgehog') if name.startswith(('ideas_', 'words_'))]
