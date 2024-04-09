@@ -1,9 +1,14 @@
 from flask import Flask, jsonify
+import logging
 import os
 import json
 from google.cloud import storage
 from google.oauth2 import service_account
 import google.auth
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
@@ -35,8 +40,12 @@ def index():
         credentials, project = get_gcp_credentials()
         buckets = list_buckets(credentials, project)
         return jsonify({"project": project, "buckets": buckets})
-    except Exception as e:
+    except ValueError as e:
+        logger.error(f"Error getting GCP credentials: {str(e)}")
         return jsonify({"error": str(e)}), 500
+    except Exception as e:
+        logger.error(f"Unexpected error: {str(e)}", exc_info=True)
+        return jsonify({"error": "An unexpected error occurred."}), 500
 
 if __name__ == "__main__":
     app.run(debug=True)
