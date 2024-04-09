@@ -20,14 +20,16 @@ def get_gcp_credentials():
         creds_json = os.environ.get("GCP_CREDENTIALS")
         if creds_json is None:
             raise ValueError("GCP_CREDENTIALS not set in Heroku environment.")
-        credentials = service_account.Credentials.from_service_account_info(creds_json)
-        project_id = json.loads(creds_json).get('project_id')
+        creds_dict = json.loads(creds_json)
+        credentials = service_account.Credentials.from_service_account_info(creds_dict)
+        project_id = creds_dict.get('project_id')
         return credentials, project_id
     else:
         credentials, project = google.auth.default()
         if not credentials or not project:
             raise ValueError("Could not determine Google credentials. Make sure you have set up the Google Cloud SDK locally.")
         return credentials, project
+
 
 def list_buckets(credentials, project):
     """Lists all buckets."""
