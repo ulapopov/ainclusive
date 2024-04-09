@@ -211,7 +211,7 @@ def fetch_text_content_from_gcs(bucket_name, file_path):
     return blob.download_as_string().decode('utf-8')
 
 def generate_gcs_url(bucket_name, file_path):
-    storage_client = storage.Client()
+    storage_client = create_storage_client()
     bucket = storage_client.bucket(bucket_name)
     blob = bucket.blob(file_path)
     return blob.public_url
