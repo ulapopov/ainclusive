@@ -9,9 +9,13 @@
             display: flex;
             flex-direction: column;
         }
-        /* Apply half-width constraint to all text sections */
-        .half-width-text {
-            width: 50%;
+        .row {
+            display: flex;
+            justify-content: space-between; /* This separates the text and image */
+        }
+        .half-width {
+            width: 48%; /* Slightly less than half to account for margins/gaps */
+            margin-bottom: 20px; /* Adds space between sections */
         }
         .text-section, .upper-section {
             margin-bottom: 20px; /* Adds space between sections */
@@ -22,9 +26,8 @@
             gap: 10px; /* Space between images */
         }
         .image-container img {
-            width: 10vw; /* Image width as percentage of the viewport width */
+            width: 100%; /* Makes image take the full width of its container */
             height: auto; /* Maintains aspect ratio */
-            margin-bottom: 10px; /* Adds space below each image */
         }
     </style>
 </head>
