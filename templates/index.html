@@ -20,7 +20,7 @@
         }
         .main-image {
             grid-column: 2;
-            grid-row: 1 / span 2; /* This can be adjusted as needed */
+            grid-row: 1 / span 3; /* This can be adjusted as needed */
         }
         .ideas .image-container, .words .image-container {
             display: flex;
@@ -54,8 +54,11 @@
 
         <!-- Main Image -->
         <div class="main-image">
-            <!-- Assuming you pass the correct URL for the main image in your Flask context -->
-            <img src="{{ main_image_url }}" alt="Main Image">
+            {% for image_url in image_names %}
+                {% if image_url.startswith('main_') %}
+                    <img src="{{ image_url }}" alt="Main Image">
+                {% endif %}
+            {% endfor %}
         </div>
 
         <!-- Ideas Section with Tiny Images -->
