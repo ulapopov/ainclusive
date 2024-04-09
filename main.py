@@ -15,7 +15,9 @@ def get_gcp_credentials():
         print("GCP_CREDENTIALS from env: True")
         try:
             # Parse the JSON string directly
+            print(f"creds_json: {creds_json}")
             creds_info = json.loads(creds_json)
+            print(f"creds info: {creds_info}")
             print("Successfully parsed GCP_CREDENTIALS.")
             credentials = service_account.Credentials.from_service_account_info(creds_info)
             return credentials, creds_info['project_id']
