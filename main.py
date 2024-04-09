@@ -32,7 +32,7 @@ if on_heroku:
     from google.oauth2 import service_account
     import json
 
-    creds_json = os.environ.get("GCP_CREDENTIALS_JSON")
+    creds_json = os.environ.get("GCP_CREDENTIALS")
     if creds_json:
         creds_dict = json.loads(creds_json)
         credentials = service_account.Credentials.from_service_account_info(creds_dict)
