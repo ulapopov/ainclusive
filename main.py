@@ -43,7 +43,7 @@ def create_storage_client():
         return storage.Client(credentials=credentials)
     else:
         # Locally, we assume default credentials are set up properly (gcloud auth application-default login)
-        return storage.Client()
+        return None
 
 # Now, whenever you need a storage client, call create_storage_client():
 storage_client = create_storage_client()
@@ -216,13 +216,13 @@ def generate_gcs_url(bucket_name, file_path):
 
 @app.route('/')
 def index():
-    bucket_name = 'ainclusive'
     if on_heroku:
         # Use GCS URLs for Heroku
         image_files = list_gcs_files(bucket_name, 'hedgehog/images/')
         image_names = [generate_gcs_url(bucket_name, file_path) for file_path in image_files]
         text_content = fetch_text_content_from_gcs(bucket_name, 'hedgehog/original_text.txt')
-        major_ideas_content = fetch_text_content_from_gcs(bucket_name, 'hedgehog/major_ideas.txt')
+        major_ideas = fetch_text_content_from_gcs(bucket_name, 'hedgehog/major_ideas.txt')
+        major_ideas_content = major_ideas.split('\n')
         new_words_content = fetch_text_content_from_gcs(bucket_name, 'hedgehog/new_words.txt')
         text_summary_content = fetch_text_content_from_gcs(bucket_name, 'hedgehog/text_summary.txt')
     else:
