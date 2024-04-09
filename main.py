@@ -22,9 +22,7 @@ from google.oauth2 import service_account
 app = Flask(__name__)
 
 socketio = SocketIO(app)
-
 on_heroku = os.environ.get('HEROKU', 'False') == 'True'
-
 bucket_name = 'ainclusive'
 
 def get_gcp_credentials():
@@ -219,7 +217,7 @@ def generate_gcs_url(bucket_name, file_path):
 @app.route('/')
 def index():
     bucket_name = 'ainclusive'
-    if 'HEROKU' in os.environ:
+    if on_heroku:
         # Use GCS URLs for Heroku
         image_files = list_gcs_files(bucket_name, 'hedgehog/images/')
         image_names = [generate_gcs_url(bucket_name, file_path) for file_path in image_files]
