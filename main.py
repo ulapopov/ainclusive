@@ -13,8 +13,10 @@ app = Flask(__name__)
 
 def get_gcp_credentials():
     credentials_json = os.getenv('GCP_CREDENTIALS')
+    print(credentials_json)
     if credentials_json:
         credentials_dict = json.loads(credentials_json)
+        print(credentials_dict)
         credentials = service_account.Credentials.from_service_account_info(credentials_dict)
     else:
         # Assuming GOOGLE_APPLICATION_CREDENTIALS is set for local development
