@@ -20,8 +20,9 @@ def get_gcp_credentials():
         creds_json = os.environ.get("GCP_CREDENTIALS")
         if creds_json is None:
             raise ValueError("GCP_CREDENTIALS not set in Heroku environment.")
-        creds_dict = json.loads(creds_json)
-        return service_account.Credentials.from_service_account_info(creds_dict), creds_dict.get('project_id')
+        credentials = service_account.Credentials.from_service_account_info(creds_json)
+        project_id = json.loads(creds_json).get('project_id')
+        return credentials, project_id
     else:
         credentials, project = google.auth.default()
         if not credentials or not project:
