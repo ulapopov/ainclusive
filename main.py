@@ -1,54 +1,42 @@
 from flask import Flask, jsonify
-import logging
+from io import BytesIO
+from PIL import Image, ImageOps, ImageDraw, ImageFilter
+import random
+import requests
 import os
-import json
+from urllib.parse import quote
 from google.cloud import storage
 from google.oauth2 import service_account
-import google.auth
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+import json
 
 app = Flask(__name__)
 
-def is_heroku():
-    return 'DYNO' in os.environ
-
 def get_gcp_credentials():
-    if is_heroku():
-        creds_json = os.environ.get("GCP_CREDENTIALS")
-        if creds_json is None:
-            raise ValueError("GCP_CREDENTIALS not set in Heroku environment.")
-        creds_dict = json.loads(creds_json)
-        credentials = service_account.Credentials.from_service_account_info(creds_dict)
-        project_id = creds_dict.get('project_id')
-        return credentials, project_id
+    credentials_json = os.getenv('GOOGLE_CREDENTIALS')
+    if credentials_json:
+        credentials_dict = json.loads(credentials_json)
+        credentials = service_account.Credentials.from_service_account_info(credentials_dict)
     else:
-        credentials, project = google.auth.default()
-        if not credentials or not project:
-            raise ValueError("Could not determine Google credentials. Make sure you have set up the Google Cloud SDK locally.")
-        return credentials, project
+        # Assuming GOOGLE_APPLICATION_CREDENTIALS is set for local development
+        credentials = None
+    return credentials
 
+credentials = get_gcp_credentials()
 
-def list_buckets(credentials, project):
-    """Lists all buckets."""
-    storage_client = storage.Client(credentials=credentials, project=project)
-    buckets = storage_client.list_buckets()
-    return [bucket.name for bucket in buckets]
+# Initialize the GCP client
+if credentials:
+    client = storage.Client(credentials=credentials)
+else:
+    # Automatically looks for GOOGLE_APPLICATION_CREDENTIALS or falls back to ADC
+    client = storage.Client()
+
 
 @app.route('/')
-def index():
-    try:
-        credentials, project = get_gcp_credentials()
-        buckets = list_buckets(credentials, project)
-        return jsonify({"project": project, "buckets": buckets})
-    except ValueError as e:
-        logger.error(f"Error getting GCP credentials: {str(e)}")
-        return jsonify({"error": str(e)}), 500
-    except Exception as e:
-        logger.error(f"Unexpected error: {str(e)}", exc_info=True)
-        return jsonify({"error": "An unexpected error occurred."}), 500
+def home():
+    bucket = client.bucket('ainclusive')
+    return "Welcome to the bucket"
 
-if __name__ == "__main__":
-    app.run(debug=True)
+
+if __name__ == '__main__':
+    port = int(os.environ.get('PORT', 5001))  # Use the PORT environment variable if it's there, otherwise default to 5000
+    app.run(debug=True, host='0.0.0.0', port=port)
