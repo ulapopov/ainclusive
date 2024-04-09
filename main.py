@@ -28,10 +28,6 @@ on_heroku = os.environ.get('HEROKU', 'False') == 'True'
 bucket_name = 'ainclusive'
 
 if on_heroku:
-    # On Heroku, use GCP credentials from environment variable
-    from google.oauth2 import service_account
-    import json
-
     creds_json = os.environ.get("GCP_CREDENTIALS")
     if creds_json:
         creds_dict = json.loads(creds_json)
@@ -61,7 +57,7 @@ client = OpenAI(
 )
 
 def list_gcs_files(bucket_name, prefix):
-    storage_client = storage.Client()
+    storage_client = create_storage_client()
     blobs = storage_client.list_blobs(bucket_name, prefix=prefix)
     return [blob.name for blob in blobs]
 
@@ -208,7 +204,7 @@ def generate_and_save_images(prompts, drive_folder_path="static/images"):
     return saved_images
 
 def fetch_text_content_from_gcs(bucket_name, file_path):
-    storage_client = storage.Client()
+    storage_client = create_storage_client()
     bucket = storage_client.get_bucket(bucket_name)
     blob = bucket.blob(file_path)
     return blob.download_as_string().decode('utf-8')
@@ -241,4 +237,4 @@ def index():
 
 
 if __name__ == '__main__':
-    socketio.run(app, debug=True, allow_unsafe_werkzeug=True)
+    socketio.run(app, debug=True)
