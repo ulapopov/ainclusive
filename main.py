@@ -4,6 +4,11 @@ from google.cloud import storage
 from google.oauth2 import service_account
 import google.auth
 
+
+def is_heroku():
+    return "HEROKU" in os.environ
+
+
 def get_gcp_credentials():
     creds_json = os.getenv("GCP_CREDENTIALS")
     if creds_json:
@@ -35,5 +40,22 @@ def list_buckets():
     except Exception as e:
         print(f"Error listing buckets: {e}")
 
+
+from flask import Flask
+app = Flask(__name__)
+
+@app.route('/')
+def index():
+    if is_heroku():
+        # Heroku-specific code to use GCP services
+        credentials, project = get_gcp_credentials()
+        print(f"Using project: {project}")
+        buckets_list = list_buckets(credentials, project)
+        buckets_str = ', '.join(buckets_list)
+        return f"Running on Heroku with GCP. Buckets: {buckets_str}"
+    else:
+        # Code to run locally without GCP services
+        return "Running locally without GCP services."
+
 if __name__ == "__main__":
-    list_buckets()
+    app.run(debug=True)
