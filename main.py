@@ -1,63 +1,42 @@
+from flask import Flask, jsonify
 import os
 import json
 from google.cloud import storage
 from google.oauth2 import service_account
 import google.auth
 
+app = Flask(__name__)
 
 def is_heroku():
-    return "HEROKU" in os.environ
-
+    return 'DYNO' in os.environ
 
 def get_gcp_credentials():
-    creds_json = os.getenv("GCP_CREDENTIALS")
-    if creds_json:
-        print("GCP_CREDENTIALS from env: True")
-        try:
-            # Parse the JSON string directly
-            print(f"creds_json: {creds_json}")
-            creds_info = json.loads(creds_json)
-            print(f"creds info: {creds_info}")
-            print("Successfully parsed GCP_CREDENTIALS.")
-            credentials = service_account.Credentials.from_service_account_info(creds_info)
-            return credentials, creds_info['project_id']
-        except json.JSONDecodeError as e:
-            print(f"Failed to parse GCP_CREDENTIALS: {e}")
-            return None, None
+    if is_heroku():
+        creds_json = os.environ.get("GCP_CREDENTIALS")
+        if creds_json is None:
+            raise ValueError("GCP_CREDENTIALS not set in Heroku environment.")
+        creds_dict = json.loads(creds_json)
+        return service_account.Credentials.from_service_account_info(creds_dict), creds_dict.get('project_id')
     else:
-        print("GCP_CREDENTIALS not set, using default credentials.")
         credentials, project = google.auth.default()
+        if not credentials or not project:
+            raise ValueError("Could not determine Google credentials. Make sure you have set up the Google Cloud SDK locally.")
         return credentials, project
 
-def list_buckets():
+def list_buckets(credentials, project):
     """Lists all buckets."""
-    credentials, project = get_gcp_credentials()
-    print(f"Using project: {project}")
     storage_client = storage.Client(credentials=credentials, project=project)
-    try:
-        buckets = storage_client.list_buckets()
-        print("Buckets:")
-        for bucket in buckets:
-            print(bucket.name)
-    except Exception as e:
-        print(f"Error listing buckets: {e}")
-
-
-from flask import Flask
-app = Flask(__name__)
+    buckets = storage_client.list_buckets()
+    return [bucket.name for bucket in buckets]
 
 @app.route('/')
 def index():
-    if is_heroku():
-        # Heroku-specific code to use GCP services
+    try:
         credentials, project = get_gcp_credentials()
-        print(f"Using project: {project}")
-        buckets_list = list_buckets(credentials, project)
-        buckets_str = ', '.join(buckets_list)
-        return f"Running on Heroku with GCP. Buckets: {buckets_str}"
-    else:
-        # Code to run locally without GCP services
-        return "Running locally without GCP services."
+        buckets = list_buckets(credentials, project)
+        return jsonify({"project": project, "buckets": buckets})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(debug=True)
