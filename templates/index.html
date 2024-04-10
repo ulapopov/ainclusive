@@ -12,6 +12,17 @@
         h2 {
             font-weight: 700; /* Roboto bold for headings */
         }
+        .upper-section p, .text-section p, .text-section pre {
+            font-weight: 400; /* Roboto regular for text */
+            font-size: 16px; /* Adjust size as needed */
+            line-height: 1.5; /* Adjusts line spacing to 1.5x */
+        }
+        .new-words pre {
+            font-family: 'Roboto', sans-serif; /* Ensures uniform font */
+            font-size: 16px; /* Ensures uniform size */
+            line-height: 1.5; /* Ensures uniform line spacing */
+            white-space: pre-wrap; /* Ensures text wraps and maintains formatting */
+        }
         p, pre {
             font-weight: 400; /* Roboto regular for text */
             font-size: 16px; /* Adjust size as needed */
@@ -36,7 +47,7 @@
             gap: 10px; /* Adjust spacing between tiny images */
         }
         .ideas .image-container img, .words .image-container img {
-            width: 10vw; /* Size for smaller images */
+            width: 15vw; /* Size for smaller images */
             height: auto;
         }
         .main-image img {
@@ -94,6 +105,22 @@
                 {% endfor %}
             </div>
         </div>
+
+        <!-- Games Section -->
+        <div class="games">
+            <h2>Games</h2>
+            <!-- Game 1 -->
+            <div class="game">
+                <h3>Game 1</h3>
+                <pre>{{ game1_txt | safe }}</pre>
+            </div>
+            <!-- Game 2 -->
+            <div class="game">
+                <h3>Game 2</h3>
+                <pre>{{ game2_txt | safe }}</pre>
+            </div>
+        </div>
+
     </div>
 </body>
 </html>
