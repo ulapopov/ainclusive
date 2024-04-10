@@ -241,7 +241,8 @@ def index():
 
     # Pass the variables to your template
     return render_template('index.html', image_names=image_names, text=text_content, major_ideas=major_ideas_content,
-                           new_words=new_words_content, summaries=text_summary_content, game1_txt=fill_in_game, game2_txt=not_matching)
+                           new_words=new_words_content, summaries=text_summary_content,
+                           game1_txt=fill_in_game, game2_txt=not_matching)
 
 
 if __name__ == '__main__':
