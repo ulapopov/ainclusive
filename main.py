@@ -214,6 +214,10 @@ def generate_gcs_url(bucket_name, file_path):
     blob = bucket.blob(file_path)
     return blob.public_url
 
+@app.route('/hedgehogs.html')
+def serve_hedgehog():
+    return send_from_directory('static', 'hedgehogs.html')
+
 @app.route('/')
 def index():
     if on_heroku:
