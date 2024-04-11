@@ -21,22 +21,20 @@
             background-blend-mode: luminosity;
         }
         h1.main-title {
-            font-size: 5em;
-            color: #4285F4; /* Change color to white for better visibility */
+            font-size: 6em;
+            color: #6B5BB6
             text-align: left;
             margin-top: 1em;
-            margin left: 3em;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Add text shadow for better visibility */
+            margin-left: 3em;
         }
         h1 {
-            color: #4285F4;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            color: #FF7A5A;
         }
     </style>
 </head>
 <body>
     <h1 class="main-title">AInclusive</h1>
-    <h1>Choose file to load</h1>
+    <h1>Please load a file</h1>
     <input type="file" id="fileInput" style="display:none;" onchange="loadFile(event)"/>
     <button onclick="document.getElementById('fileInput').click();">Choose file to load</button>
 
