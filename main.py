@@ -235,7 +235,7 @@ def serve_hedgehog():
     fill_in_game = fetch_text_content_from_gcs(bucket_name, 'hedgehog/fillin.txt')
     not_matching = fetch_text_content_from_gcs(bucket_name, 'hedgehog/not_matching.txt')
 
-    words_and_images = list(zip_longest(new_words, filtered_image_urls, fillvalue='No Image Available'))
+    words_and_images = list(zip_longest(new_words, sorted_image_urls, fillvalue='No Image Available'))
 
     return render_template('hedgehogs.html', words_and_images=words_and_images, text=text_content,
                            major_ideas=major_ideas_content,
