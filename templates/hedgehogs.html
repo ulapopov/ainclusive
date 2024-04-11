@@ -102,19 +102,19 @@
             <h2>New Words</h2>
             {% for word in new_words %}
                 <p>{{ word }}</p>
-                {% set found_image = false %}
+                {% set image_found = false %}
                 {% for image in image_names %}
-                    {% if 'words_' in image %}
+                    {% if 'words_' in image and not image_found %}
                         <img src="{{ image }}" alt="Word Image">
-                        {% set found_image = true %}
-                        {% break %}
+                        {% set image_found = true %}
                     {% endif %}
                 {% endfor %}
-                {% if not found_image %}
+                {% if not image_found %}
                     <p>No corresponding image.</p>
                 {% endif %}
             {% endfor %}
         </div>
+
 
 
 
