@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <title>Choose File Demo</title>
     <style>
+        body::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5); /* Dark overlay */
+        z-index: -1;
+        }
         body {
             background-image: url('https://storage.googleapis.com/ainclusive/background.webp');
             background-repeat: no-repeat;
@@ -11,7 +21,7 @@
             opacity: 0.1;
         }
         h1.main-title {
-            font-size: 4em; /* Very big title */
+            font-size: 2em; /* big title */
             color: pink; /* Making sure it's visible on the background */
             text-align: center; /* Centering the title */
             margin-top: 0.5em; /* Adjust top margin */
@@ -19,6 +29,7 @@
     </style>
 </head>
 <body>
+    <h1 class="main-title">AInclusive</h1>
     <h1>Choose file to load</h1>
     <input type="file" id="fileInput" style="display:none;" onchange="loadFile(event)"/>
     <button onclick="document.getElementById('fileInput').click();">Choose file to load</button>
