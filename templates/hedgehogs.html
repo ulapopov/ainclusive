@@ -101,7 +101,9 @@
         <!-- Words Section with Tiny Images -->
         <div class="words">
             <h2>New Words</h2>
-            <pre>{{ new_words | safe }}</pre>
+            {% for word in new_words %}
+            <p>{{ word }}</p>
+            {% endfor %}
             <div class="image-container">
                 {% for image_url in image_names if 'words_' in image_url %}
                 <img src="{{ image_url }}" alt="Word Image">
