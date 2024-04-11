@@ -229,7 +229,7 @@ def serve_hedgehog():
     not_matching = fetch_text_content_from_gcs(bucket_name, 'hedgehog/not_matching.txt')
     return render_template('hedgehogs.html', image_names=image_names, text=text_content, major_ideas=major_ideas_content,
                            new_words=new_words_content, summaries=text_summary_content,
-                           game1_txt=fill_in_game, game2_txt=not_matching)
+                           game1_txt=fill_in_game, game2_txt=not_matching, zip_longest=zip_longest)
 
 @app.route('/')
 def index():
