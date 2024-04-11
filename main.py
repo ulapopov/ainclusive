@@ -220,7 +220,13 @@ def generate_gcs_url(bucket_name, file_path):
 def serve_hedgehog():
     image_files = list_gcs_files(bucket_name, 'hedgehog/images/')
     image_urls = [generate_gcs_url(bucket_name, file_path) for file_path in image_files]
-    filtered_image_urls = [url for url in image_urls if 'words_' in url]
+
+    sorted_image_urls = sorted(
+        image_urls,
+        key=lambda x: int(x.split('_')[-1].split('.')[0]) if 'words_' in x and x.split('_')[-1].split('.')[
+            0].isdigit() else float('inf')
+    )
+
     text_content = fetch_text_content_from_gcs(bucket_name, 'hedgehog/original_text.txt')
     major_ideas = fetch_text_content_from_gcs(bucket_name, 'hedgehog/major_ideas.txt')
     major_ideas_content = major_ideas.split('\n')
