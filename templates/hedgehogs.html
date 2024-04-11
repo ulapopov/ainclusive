@@ -101,14 +101,10 @@
         <!-- Words Section with Tiny Images -->
         <div class="words">
             <h2>New Words</h2>
-            {% for word in new_words %}
+            {% for word, image_url in zip(new_words, image_names) if 'words_' in image_url %}
             <p>{{ word }}</p>
+            <img src="{{ image_url }}" alt="Word Image">
             {% endfor %}
-            <div class="image-container">
-                {% for image_url in image_names if 'words_' in image_url %}
-                <img src="{{ image_url }}" alt="Word Image">
-                {% endfor %}
-            </div>
         </div>
 
         <!-- Games Section -->
