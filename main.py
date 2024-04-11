@@ -224,6 +224,8 @@ def serve_hedgehog():
     major_ideas_content = major_ideas.split('\n')
     new_words = fetch_text_content_from_gcs(bucket_name, 'hedgehog/new_words.txt')
     new_words_content = new_words.split('\n')
+    print(new_words_content)
+    print(type(new_words_content))
     text_summary_content = fetch_text_content_from_gcs(bucket_name, 'hedgehog/text_summary.txt')
     fill_in_game = fetch_text_content_from_gcs(bucket_name, 'hedgehog/fillin.txt')
     not_matching = fetch_text_content_from_gcs(bucket_name, 'hedgehog/not_matching.txt')
