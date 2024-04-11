@@ -11,23 +11,24 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.7); /* Dark overlay */
+            background: rgba(255, 255, 255, 0.7); /* Dark overlay */
             z-index: -1;
         }
         body {
             background-image: url('https://storage.googleapis.com/ainclusive/background.webp');
             background-repeat: no-repeat;
             background-size: cover;
+            background-blend-mode: luminosity;
         }
         h1.main-title {
-            font-size: 2em;
-            color: white; /* Change color to white for better visibility */
+            font-size: 4em;
+            color: #4285F4; /* Change color to white for better visibility */
             text-align: center;
-            margin-top: 0.5em;
+            margin-top: 1em;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Add text shadow for better visibility */
         }
         h1 {
-            color: white;
+            color: #333;
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
     </style>
