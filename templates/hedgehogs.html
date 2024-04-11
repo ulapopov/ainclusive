@@ -102,13 +102,14 @@
             <h2>New Words</h2>
             {% set words_and_images = zip_longest(new_words, image_names, fillvalue='') %}
             {% for word, image_url in words_and_images %}
+                <p>Debug: Word - '{{ word }}', Image URL - '{{ image_url }}'</p>
                 {% if 'word_' in image_url %}
                     <p>{{ word }}</p>
-                    <p>Debug: '{{ word }}' with image '{{ image_url }}'</p>
                     <img src="{{ image_url }}" alt="Word Image">
                 {% endif %}
             {% endfor %}
         </div>
+
 
 
         <!-- Games Section -->
