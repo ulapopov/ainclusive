@@ -103,7 +103,7 @@
             {% set words_and_images = zip_longest(new_words, image_names, fillvalue='') %}
             {% for word, image_url in words_and_images %}
                 <p>Debug: Word - '{{ word }}', Image URL - '{{ image_url }}'</p>
-                {% if 'word_' in image_url %}
+                {% if 'words_' in image_url %}
                     <p>{{ word }}</p>
                     <img src="{{ image_url }}" alt="Word Image">
                 {% endif %}
