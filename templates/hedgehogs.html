@@ -100,7 +100,7 @@
 
         <div class="words">
             <h2>New Words</h2>
-            {% set words_and_images = zip_longest(new_words, image_names, fillvalue='') %}
+            {% set words_and_images = zip_longest(new_words, image_names, fillvalue='No Image Available') %}
             {% for word, image_url in words_and_images %}
                 <p>Debug: Word - '{{ word }}', Image URL - '{{ image_url }}'</p>
                 {% if 'words_' in image_url %}
@@ -109,6 +109,7 @@
                 {% endif %}
             {% endfor %}
         </div>
+
 
 
 
