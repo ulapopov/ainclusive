@@ -18,6 +18,7 @@ from flask_socketio import SocketIO
 from logging import StreamHandler
 from google.cloud import storage
 from google.oauth2 import service_account
+from itertools import zip_longest
 
 app = Flask(__name__)
 

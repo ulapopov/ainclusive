@@ -98,12 +98,14 @@
             </div>
         </div>
 
-        <!-- Words Section with Tiny Images -->
         <div class="words">
             <h2>New Words</h2>
-            {% for word, image_url in zip(new_words, image_names) if 'words_' in image_url %}
+            {% set words_and_images = zip_longest(new_words, image_names, fillvalue='') %}
+            {% for word, image_url in words_and_images if 'words_' in image_url %}
             <p>{{ word }}</p>
+            {% if image_url %}
             <img src="{{ image_url }}" alt="Word Image">
+            {% endif %}
             {% endfor %}
         </div>
 
