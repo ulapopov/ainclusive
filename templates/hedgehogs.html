@@ -100,6 +100,7 @@
 
         <div class="words">
             <h2>New Words</h2>
+            <p>Static test text</p>
             {% set words_and_images = zip_longest(new_words, image_names, fillvalue='') %}
             {% for word, image_url in words_and_images if 'words_' in image_url %}
             <p>{{ word }}</p>
