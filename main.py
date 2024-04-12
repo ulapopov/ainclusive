@@ -215,44 +215,65 @@ def generate_gcs_url(bucket_name, file_path):
     blob = bucket.blob(file_path)
     return blob.public_url
 
+file_sets = {
+    'hedgehog': {
+        'text': 'Text content for Hedgehogs',
+        'image': 'path/to/hedgehog_image.jpg'
+    },
+    'inuit': {
+        'text': 'Text content for Inuits',
+        'image': 'path/to/inuit_image.jpg'
+    }
+}
 
-@app.route('/hedgehogs.html')
-def serve_hedgehog():
-    image_files = list_gcs_files(bucket_name, 'hedgehog/images/')
+
+@app.route('/display/<category>')
+def serve_content(category):
+    base_path = f'{category}/'
+
+    image_files = list_gcs_files(bucket_name, f'{base_path}images/')
     image_urls = [generate_gcs_url(bucket_name, file_path) for file_path in image_files]
 
     filtered_word_image_urls = [url for url in image_urls if 'words_' in url]
-
-    # Sort the filtered image URLs by the numeric suffix (assuming format 'words_X_description.ext')
     sorted_word_image_urls = sorted(
         filtered_word_image_urls,
         key=lambda x: int(x.split('_')[1].split('.')[0])
     )
 
     filtered_idea_image_urls = [url for url in image_urls if 'ideas_' in url]
-
     sorted_idea_image_urls = sorted(
         filtered_idea_image_urls,
         key=lambda x: int(x.split('_')[1].split('.')[0])
     )
 
-    text_content = fetch_text_content_from_gcs(bucket_name, 'hedgehog/original_text.txt')
-    major_ideas = fetch_text_content_from_gcs(bucket_name, 'hedgehog/major_ideas.txt').split('\n')
-    new_words = fetch_text_content_from_gcs(bucket_name, 'hedgehog/new_words.txt').split('\n')
-    text_summary_content = fetch_text_content_from_gcs(bucket_name, 'hedgehog/text_summary.txt')
-    fill_in_game = fetch_text_content_from_gcs(bucket_name, 'hedgehog/fillin.txt')
-    not_matching = fetch_text_content_from_gcs(bucket_name, 'hedgehog/not_matching.txt')
+    text_content = fetch_text_content_from_gcs(bucket_name, f'{base_path}original_text.txt')
+    major_ideas = fetch_text_content_from_gcs(bucket_name, f'{base_path}major_ideas.txt').split('\n')
+    new_words = fetch_text_content_from_gcs(bucket_name, f'{base_path}new_words.txt').split('\n')
+    text_summary_content = fetch_text_content_from_gcs(bucket_name, f'{base_path}text_summary.txt')
+    fill_in_game = fetch_text_content_from_gcs(bucket_name, f'{base_path}fillin.txt')
+    not_matching = fetch_text_content_from_gcs(bucket_name, f'{base_path}not_matching.txt')
 
     words_and_images = list(zip_longest(new_words, sorted_word_image_urls, fillvalue='No Image Available'))
     ideas_and_images = list(zip_longest(major_ideas, sorted_idea_image_urls, fillvalue='No Image Available'))
 
-    return render_template('hedgehogs.html', words_and_images=words_and_images, text=text_content,
+    return render_template('display.html', words_and_images=words_and_images, text=text_content,
                            ideas_and_images=ideas_and_images,
                            summaries=text_summary_content, game1_txt=fill_in_game, game2_txt=not_matching)
 
-@app.route('/')
+
+@app.route('/', methods=['GET', 'POST'])
 def index():
+    if request.method == 'POST':
+        file_name = request.files['file'].filename
+        if 'hedgehog' in file_name:
+            content = file_sets['hedgehog']
+        elif 'inuit' in file_name:
+            content = file_sets['inuit']
+        else:
+            return "File not recognized", 400
+        return render_template('display.html', text=content['text'], image=content['image'])
     return render_template('index.html')
+
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)

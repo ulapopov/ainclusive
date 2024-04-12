@@ -43,28 +43,20 @@
 <body>
     <h1 class="main-title">AInclusive</h1>
     <h1>Please load a file</h1>
-    <input type="file" id="fileInput" style="display:none;" onchange="loadFile(event)"/>
-    <button onclick="document.getElementById('fileInput').click();">Choose file to load</button>
+    <form method="POST" enctype="multipart/form-data">
+        <input type="file" id="fileInput" name="file" style="display:none;" onchange="this.form.submit();">
+        <button type="button" onclick="document.getElementById('fileInput').click();">Choose file to load</button>
+    </form>
     <div id="processing">
         <img src="https://storage.googleapis.com/ainclusive/Twyn.gif" alt="Processing...">
         <h1 class="main-title">Processing...</h1>
     </div>
 
     <script>
-        function loadFile(event) {
-            var fileName = event.target.files[0].name;
+        const fileInput = document.getElementById('fileInput');
+        fileInput.addEventListener('change', function() {
             document.getElementById('processing').style.display = 'block';
-            setTimeout(function() {
-                document.getElementById('processing').style.display = 'none';
-                if (fileName === "hedgehog.pdf") {
-                    window.location.href = "hedgehogs.html";
-                } else if (fileName === "example_B.txt") {
-                    window.location.href = "eskimos.html";
-                } else {
-                    alert("File not recognized. Please select a valid file.");
-                }
-            }, 10000); // delay for 10 seconds
-        }
+        });
     </script>
 </body>
 </html>
