@@ -11,7 +11,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(255, 255, 255, 0.3); /* Dark overlay */
+            background: rgba(255, 255, 255, 0.3);
             z-index: -1;
         }
         body {
@@ -30,6 +30,14 @@
         h1 {
             color: #FF7A5A;
         }
+        #processing {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 100;
+        }
     </style>
 </head>
 <body>
@@ -37,19 +45,25 @@
     <h1>Please load a file</h1>
     <input type="file" id="fileInput" style="display:none;" onchange="loadFile(event)"/>
     <button onclick="document.getElementById('fileInput').click();">Choose file to load</button>
+    <div id="processing">
+        <img src="https://example.com/processing.gif" alt="Processing...">
+        <p>Processing...</p>
+    </div>
 
     <script>
         function loadFile(event) {
             var fileName = event.target.files[0].name;
-            if (fileName === "hedgehog.pdf") {
-                // Display Page A
-                window.location.href = "hedgehogs.html";
-            } else if (fileName === "example_B.txt") {
-                // Display Page B
-                window.location.href = "eskimos.html";
-            } else {
-                alert("File not recognized. Please select a valid file.");
-            }
+            document.getElementById('processing').style.display = 'block';
+            setTimeout(function() {
+                document.getElementById('processing').style.display = 'none';
+                if (fileName === "hedgehog.pdf") {
+                    window.location.href = "hedgehogs.html";
+                } else if (fileName === "example_B.txt") {
+                    window.location.href = "eskimos.html";
+                } else {
+                    alert("File not recognized. Please select a valid file.");
+                }
+            }, 10000); // delay for 10 seconds
         }
     </script>
 </body>
