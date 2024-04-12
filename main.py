@@ -264,15 +264,18 @@ def serve_content(category):
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
-        file_name = request.files['file'].filename
-        if 'hedgehog' in file_name:
-            content = file_sets['hedgehog']
-        elif 'inuit' in file_name:
-            content = file_sets['inuit']
+        uploaded_file = request.files['file']
+        # Ensure a file is selected
+        if uploaded_file:
+            # Strip the .pdf extension to determine the category
+            file_category = uploaded_file.filename.replace('.pdf', '')
+            # Redirect to the 'serve_content' function with the appropriate category
+            return redirect(url_for('serve_content', category=file_category))
         else:
-            return "File not recognized", 400
-        return render_template('display.html', text=content['text'], image=content['image'])
+            # Handle the case where no file was selected
+            return render_template('index.html', error="Please select a file.")
     return render_template('index.html')
+
 
 
 if __name__ == '__main__':
