@@ -225,7 +225,7 @@ def serve_hedgehog():
 
     # Sort the filtered image URLs by the numeric suffix (assuming format 'words_X_description.ext')
     sorted_word_image_urls = sorted(
-        filtered_image_urls,
+        filtered_word_image_urls,
         key=lambda x: int(x.split('_')[1].split('.')[0])
     )
 
