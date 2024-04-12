@@ -221,28 +221,33 @@ def serve_hedgehog():
     image_files = list_gcs_files(bucket_name, 'hedgehog/images/')
     image_urls = [generate_gcs_url(bucket_name, file_path) for file_path in image_files]
 
-    filtered_image_urls = [url for url in image_urls if 'words_' in url]
+    filtered_word_image_urls = [url for url in image_urls if 'words_' in url]
 
     # Sort the filtered image URLs by the numeric suffix (assuming format 'words_X_description.ext')
-    sorted_image_urls = sorted(
+    sorted_word_image_urls = sorted(
         filtered_image_urls,
         key=lambda x: int(x.split('_')[1].split('.')[0])
     )
 
-    print(sorted_image_urls)
+    filtered_idea_image_urls = [url for url in image_urls if 'ideas_' in url]
+
+    sorted_idea_image_urls = sorted(
+        filtered_idea_image_urls,
+        key=lambda x: int(x.split('_')[1].split('.')[0])
+    )
 
     text_content = fetch_text_content_from_gcs(bucket_name, 'hedgehog/original_text.txt')
-    major_ideas = fetch_text_content_from_gcs(bucket_name, 'hedgehog/major_ideas.txt')
-    major_ideas_content = major_ideas.split('\n')
+    major_ideas = fetch_text_content_from_gcs(bucket_name, 'hedgehog/major_ideas.txt').split('\n')
     new_words = fetch_text_content_from_gcs(bucket_name, 'hedgehog/new_words.txt').split('\n')
     text_summary_content = fetch_text_content_from_gcs(bucket_name, 'hedgehog/text_summary.txt')
     fill_in_game = fetch_text_content_from_gcs(bucket_name, 'hedgehog/fillin.txt')
     not_matching = fetch_text_content_from_gcs(bucket_name, 'hedgehog/not_matching.txt')
 
-    words_and_images = list(zip_longest(new_words, sorted_image_urls, fillvalue='No Image Available'))
+    words_and_images = list(zip_longest(new_words, sorted_word_image_urls, fillvalue='No Image Available'))
+    ideas_and_images = list(zip_longest(major_ideas, sorted_idea_image_urls, fillvalue='No Image Available'))
 
     return render_template('hedgehogs.html', words_and_images=words_and_images, text=text_content,
-                           major_ideas=major_ideas_content,
+                           ideas_and_images=ideas_and_images,
                            summaries=text_summary_content, game1_txt=fill_in_game, game2_txt=not_matching)
 
 @app.route('/')
