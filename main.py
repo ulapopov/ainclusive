@@ -215,50 +215,35 @@ def generate_gcs_url(bucket_name, file_path):
     blob = bucket.blob(file_path)
     return blob.public_url
 
-file_sets = {
-    'hedgehog': {
-        'text': 'Text content for Hedgehogs',
-        'image': 'path/to/hedgehog_image.jpg'
-    },
-    'inuit': {
-        'text': 'Text content for Inuits',
-        'image': 'path/to/inuit_image.jpg'
-    }
-}
-
 
 @app.route('/display/<category>')
 def serve_content(category):
     base_path = f'{category}/'
 
+    # Fetch and generate URLs for image files
     image_files = list_gcs_files(bucket_name, f'{base_path}images/')
     image_urls = [generate_gcs_url(bucket_name, file_path) for file_path in image_files]
 
+    # Filter and sort word and idea images
     filtered_word_image_urls = [url for url in image_urls if 'words_' in url]
-    sorted_word_image_urls = sorted(
-        filtered_word_image_urls,
-        key=lambda x: int(x.split('_')[1].split('.')[0])
-    )
-
+    word_image_dict = {int(url.split('_')[1].split('.')[0]): url for url in filtered_word_image_urls}
     filtered_idea_image_urls = [url for url in image_urls if 'ideas_' in url]
-    sorted_idea_image_urls = sorted(
-        filtered_idea_image_urls,
-        key=lambda x: int(x.split('_')[1].split('.')[0])
-    )
+    idea_image_dict = {int(url.split('_')[1].split('.')[0]): url for url in filtered_idea_image_urls}
 
+    # Fetch text data
     text_content = fetch_text_content_from_gcs(bucket_name, f'{base_path}original_text.txt')
     major_ideas = fetch_text_content_from_gcs(bucket_name, f'{base_path}major_ideas.txt').split('\n')
     new_words = fetch_text_content_from_gcs(bucket_name, f'{base_path}new_words.txt').split('\n')
-    text_summary_content = fetch_text_content_from_gcs(bucket_name, f'{base_path}text_summary.txt')
-    fill_in_game = fetch_text_content_from_gcs(bucket_name, f'{base_path}fillin.txt')
-    not_matching = fetch_text_content_from_gcs(bucket_name, f'{base_path}not_matching.txt')
 
-    words_and_images = list(zip_longest(new_words, sorted_word_image_urls, fillvalue='No Image Available'))
-    ideas_and_images = list(zip_longest(major_ideas, sorted_idea_image_urls, fillvalue='No Image Available'))
+    # Create pairs with images, defaulting to 'No Image Available'
+    words_and_images = [(word, word_image_dict.get(i + 1, 'No Image Available')) for i, word in enumerate(new_words)]
+    ideas_and_images = [(idea, idea_image_dict.get(i + 1, 'No Image Available')) for i, idea in enumerate(major_ideas)]
 
     return render_template('display.html', words_and_images=words_and_images, text=text_content,
                            ideas_and_images=ideas_and_images,
-                           summaries=text_summary_content, game1_txt=fill_in_game, game2_txt=not_matching)
+                           summaries=fetch_text_content_from_gcs(bucket_name, f'{base_path}text_summary.txt'),
+                           game1_txt=fetch_text_content_from_gcs(bucket_name, f'{base_path}fillin.txt'),
+                           game2_txt=fetch_text_content_from_gcs(bucket_name, f'{base_path}not_matching.txt'))
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -275,7 +260,6 @@ def index():
             # Handle the case where no file was selected
             return render_template('index.html', error="Please select a file.")
     return render_template('index.html')
-
 
 
 if __name__ == '__main__':

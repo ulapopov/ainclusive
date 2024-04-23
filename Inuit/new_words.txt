@@ -1,8 +1,8 @@
-Eskimos
-Inuit
-Arctic
-seals
-polar bears
-igloos
-Inuktitut
-Nunavut
+Eskimos: A name some people use for a group of people who live in very cold places, like near the North Pole.
+Inuit: A group of people who live up in the very cold top part of the world. They have their own special way of living and their own language.
+Arctic: A very cold place at the very top of the Earth, where it's snowy and icy a lot.
+Seals: Animals that live in the ocean but can come out onto ice or land. They have smooth, shiny fur and they like to swim.
+Polar bears: Big white bears that live where it's very cold. They are strong and swim well.
+Igloos: Round houses made of snow blocks that people in cold places might build to stay warm.
+Inuktitut: The language that Inuit people speak.
+Nunavut: A big, cold place in Canada where many Inuit people live. It has lots of snow and ice.
