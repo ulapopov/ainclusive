@@ -39,13 +39,16 @@
             height: auto;
             cursor: pointer; /* Makes images clickable */
         }
+        .align-left { text-align: left; }
+        .align-right { text-align: right; }
+
     </style>
 </head>
 <body>
     <h1>AInclusive</h1>
     <div class="grid-container">
         <!-- Combined Text Sections -->
-        <div class="text-content">
+        <div class="text-content {{ align_class }}">
             <div class="upper-section">
                 <h2>Original Text</h2>
                 <p>{{ text }}</p>
