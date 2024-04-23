@@ -58,11 +58,11 @@
             height: auto; /* Maintains aspect ratio */
         }
 
-        .image-container img {
-        width: 100px; /* Reduced size */
-        height: auto;
-        cursor: pointer; /* Indicates clickable */
-    }
+        .ideas .image-container img, .words .image-container img, .main-image img {
+            width: 100px; /* Reduced size */
+            height: auto;
+            cursor: pointer; /* Indicates clickable */
+        }
     </style>
 </head>
 <body>
@@ -131,7 +131,7 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            const images = document.querySelectorAll('.image-container img');
+            const images = document.querySelectorAll('.ideas .image-container img, .words .image-container img, .main-image img');
             images.forEach(img => {
                 img.addEventListener('click', () => {
                     window.open(img.src, '_blank'); // Opens image in a new tab
