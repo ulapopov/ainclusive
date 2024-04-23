@@ -71,7 +71,7 @@
             {% for idea, image_url in ideas_and_images %}
                 <p>{{ idea }}</p>
                 {% if image_url != 'No Image Available' %}
-                    <img src="{{ image_url }}" alt="Idea Image" style="width: 100px; height: auto; cursor: pointer;" onclick="window.open(this.src, '_blank');">
+                    <img src="{{ image_url }}" alt="Idea Image" style="width: 200px; height: auto; cursor: pointer;" onclick="window.open(this.src, '_blank');">
                 {% endif %}
             {% endfor %}
         </div>
@@ -81,7 +81,7 @@
             {% for word, image_url in words_and_images %}
                 <p>{{ word }}</p>
                 {% if image_url != 'No Image Available' %}
-                    <img src="{{ image_url }}" alt="Word Image" style="width: 100px; height: auto; cursor: pointer;" onclick="window.open(this.src, '_blank');">
+                    <img src="{{ image_url }}" alt="Word Image" style="width: 200px; height: auto; cursor: pointer;" onclick="window.open(this.src, '_blank');">
                 {% endif %}
             {% endfor %}
         </div>
