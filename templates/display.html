@@ -57,6 +57,12 @@
             width: 100%; /* Full width of its container */
             height: auto; /* Maintains aspect ratio */
         }
+
+        .image-container img {
+        width: 100px; /* Reduced size */
+        height: auto;
+        cursor: pointer; /* Indicates clickable */
+    }
     </style>
 </head>
 <body>
@@ -122,5 +128,16 @@
         </div>
 
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const images = document.querySelectorAll('.image-container img');
+            images.forEach(img => {
+                img.addEventListener('click', () => {
+                    window.open(img.src, '_blank'); // Opens image in a new tab
+                });
+            });
+        });
+    </script>
 </body>
 </html>
