@@ -44,11 +44,62 @@
 <body>
     <h1>AInclusive</h1>
     <div class="grid-container">
-        <!-- Sections... -->
-        <div class="main-image">
-            <!-- Images and other content -->
+        <!-- Combined Text Sections -->
+        <div class="text-content">
+            <div class="upper-section">
+                <h2>Original Text</h2>
+                <p>{{ text }}</p>
+            </div>
+            <div class="upper-section">
+                <h2>Simplified Summary</h2>
+                <p>{{ summaries | safe }}</p>
+            </div>
         </div>
-        <!-- Other sections continue -->
+
+        <!-- Main Image Section -->
+        <div class="main-image">
+            {% for image_url in image_names %}
+                {% if 'main_' in image_url %}
+                    <img src="{{ image_url }}" alt="Main Image">
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <!-- Ideas Section with Tiny Images -->
+        <div class="words">
+            <h2>Major Ideas</h2>
+            {% for idea, image_url in ideas_and_images %}
+                <p>{{ idea }}</p>
+                {% if image_url != 'No Image Available' %}
+                    <img src="{{ image_url }}" alt="Idea Image">
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <div class="words">
+            <h2>New Words</h2>
+            {% for word, image_url in words_and_images %}
+                <p>{{ word }}</p>
+                {% if image_url != 'No Image Available' %}
+                    <img src="{{ image_url }}" alt="Word Image">
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <!-- Games Section -->
+        <div class="games">
+            <h2>Games</h2>
+            <!-- Game 1 -->
+            <div class="game">
+                <h3>Fill-in-the-Blank</h3>
+                <pre>{{ game1_txt | safe }}</pre>
+            </div>
+            <!-- Game 2 -->
+            <div class="game">
+                <h3>Odd One Out</h3>
+                <pre>{{ game2_txt | safe }}</pre>
+            </div>
+        </div>
     </div>
 
     <script>
