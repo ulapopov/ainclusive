@@ -1,4 +1,4 @@
-from imports import app, socketio, create_storage_client, PILImage, bucket_name, os, json, client
+from imports import app, socketio, create_storage_client, PILImage, bucket_name, os, json, client, requests
 from document_handler import process_pdf
 from file_utils import read_file, write_file
 
