@@ -1,33 +1,8 @@
 # Imports
-<<<<<<< HEAD
-import os
-import json
-import sys
-import re
-import time
-import base64
-import requests
-from io import BytesIO
-from datetime import datetime
-from PIL import Image as PILImage
-import PyPDF2
-import openai
-from openai import OpenAI
-from datetime import datetime
-from flask import Flask, render_template, request, send_from_directory, redirect, url_for
-from flask_socketio import SocketIO
-from logging import StreamHandler
-from google.cloud import storage
-from google.oauth2 import service_account
-from itertools import zip_longest
-from langdetect import detect
-=======
+# Imports
 from imports import app, socketio, create_storage_client, PILImage, bucket_name, os, json, client
-<<<<<<< HEAD
->>>>>>> 8276616 (moved imports to imports.py)
-=======
 from document_handler import process_pdf
->>>>>>> 9437f4a (moved pdf reading to a separate module)
+
 
 storage_client = create_storage_client()
 
