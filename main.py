@@ -219,17 +219,21 @@ def generate_gcs_url(bucket_name, file_path):
 @app.route('/display/<category>')
 def serve_content(category):
     base_path = f'{category}/'
+    file_keys = ['original_text', 'major_ideas', 'new_words', 'text_summary', 'fillin', 'not_matching']
+    file_paths = {key: f'{base_path}{key}.txt' for key in file_keys}
+
+    # Read content directly from files
+    content = {key: read_file(path).split('\n') if key != 'original_text' else read_file(path) for key, path in file_paths.items()}
 
     # Fetch and generate URLs for image files
     image_files = list_gcs_files(bucket_name, f'{base_path}images/')
-    image_urls = [generate_gcs_url(bucket_name, file_path) for file_path in image_files]
+    image_urls = {file_path: generate_gcs_url(bucket_name, file_path) for file_path in image_files}
 
-    # Filter and sort word and idea images
-    filtered_word_image_urls = [url for url in image_urls if 'words_' in url]
-    word_image_dict = {int(url.split('_')[1].split('.')[0]): url for url in filtered_word_image_urls}
-    filtered_idea_image_urls = [url for url in image_urls if 'ideas_' in url]
-    idea_image_dict = {int(url.split('_')[1].split('.')[0]): url for url in filtered_idea_image_urls}
+    # Organize images by type: words and ideas
+    word_image_urls = {i: image_urls.get(f"{base_path}images/words_{i}.jpg", 'No Image Available') for i, word in enumerate(content['new_words'], start=1)}
+    idea_image_urls = {i: image_urls.get(f"{base_path}images/ideas_{i}.jpg", 'No Image Available') for i, idea in enumerate(content['major_ideas'], start=1)}
 
+<<<<<<< HEAD
     # Fetch text data
     text_content = fetch_text_content_from_gcs(bucket_name, f'{base_path}original_text.txt')
     major_ideas = fetch_text_content_from_gcs(bucket_name, f'{base_path}major_ideas.txt').split('\n')
@@ -248,7 +252,16 @@ def serve_content(category):
                            summaries=fetch_text_content_from_gcs(bucket_name, f'{base_path}text_summary.txt'),
                            game1_txt=fetch_text_content_from_gcs(bucket_name, f'{base_path}fillin.txt'),
                            game2_txt=fetch_text_content_from_gcs(bucket_name, f'{base_path}not_matching.txt'))
+=======
+    # Create pairs with images
+    words_and_images = [(word, word_image_urls.get(i)) for i, word in enumerate(content['new_words'], start=1)]
+    ideas_and_images = [(idea, idea_image_urls.get(i)) for i, idea in enumerate(content['major_ideas'], start=1)]
+>>>>>>> 59a1c9d (more elegant serve_content function)
 
+    # Render the template with all gathered data
+    return render_template('display.html', words_and_images=words_and_images, text=content['original_text'],
+                           ideas_and_images=ideas_and_images, summaries='\n'.join(content['text_summary']),
+                           game1_txt='\n'.join(content['fillin']), game2_txt='\n'.join(content['not_matching']))
 
 
 @app.route('/', methods=['GET', 'POST'])
