@@ -171,43 +171,19 @@ def serve_content(category):
     file_paths = {key: f'{base_path}{key}.txt' for key in file_keys}
 
     # Read content directly from files
-    content = {key: read_file(path).split('\n') if key != 'original_text' else read_file(path) for key, path in
-               file_paths.items()}
+    content = {key: read_file(path).split('\n') if key != 'original_text' else read_file(path) for key, path in file_paths.items()}
 
     # Fetch and generate URLs for image files
     image_files = list_gcs_files(bucket_name, f'{base_path}images/')
     image_urls = {file_path: generate_gcs_url(bucket_name, file_path) for file_path in image_files}
 
     # Organize images by type: words and ideas
-    word_image_urls = {i: image_urls.get(f"{base_path}images/words_{i}.jpg", 'No Image Available') for i, word in
-                       enumerate(content['new_words'], start=1)}
-    idea_image_urls = {i: image_urls.get(f"{base_path}images/ideas_{i}.jpg", 'No Image Available') for i, idea in
-                       enumerate(content['major_ideas'], start=1)}
+    word_image_urls = {i: image_urls.get(f"{base_path}images/words_{i}.jpg", 'No Image Available') for i, word in enumerate(content['new_words'], start=1)}
+    idea_image_urls = {i: image_urls.get(f"{base_path}images/ideas_{i}.jpg", 'No Image Available') for i, idea in enumerate(content['major_ideas'], start=1)}
 
-<<<<<<< HEAD
-    # Fetch text data
-    text_content = fetch_text_content_from_gcs(bucket_name, f'{base_path}original_text.txt')
-    major_ideas = fetch_text_content_from_gcs(bucket_name, f'{base_path}major_ideas.txt').split('\n')
-    new_words = fetch_text_content_from_gcs(bucket_name, f'{base_path}new_words.txt').split('\n')
-
-    # Detect language of text_content
-    language = detect(text_content)
-    align_class = 'align-right' if language == 'he' else 'align-left'
-
-    # Create pairs with images, defaulting to 'No Image Available'
-    words_and_images = [(word, word_image_dict.get(i + 1, 'No Image Available')) for i, word in enumerate(new_words)]
-    ideas_and_images = [(idea, idea_image_dict.get(i + 1, 'No Image Available')) for i, idea in enumerate(major_ideas)]
-
-    return render_template('display.html', words_and_images=words_and_images, text=text_content,
-                           ideas_and_images=ideas_and_images, align_class=align_class,
-                           summaries=fetch_text_content_from_gcs(bucket_name, f'{base_path}text_summary.txt'),
-                           game1_txt=fetch_text_content_from_gcs(bucket_name, f'{base_path}fillin.txt'),
-                           game2_txt=fetch_text_content_from_gcs(bucket_name, f'{base_path}not_matching.txt'))
-=======
     # Create pairs with images
     words_and_images = [(word, word_image_urls.get(i)) for i, word in enumerate(content['new_words'], start=1)]
     ideas_and_images = [(idea, idea_image_urls.get(i)) for i, idea in enumerate(content['major_ideas'], start=1)]
->>>>>>> 59a1c9d (more elegant serve_content function)
 
     # Render the template with all gathered data
     return render_template('display.html', words_and_images=words_and_images, text=content['original_text'],
