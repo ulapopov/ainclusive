@@ -154,11 +154,13 @@ def generate_and_save_images(prompts, drive_folder_path="static/images"):
 
 
 def fetch_text_content_from_gcs(bucket_name, file_path):
+    bucket = storage_client.bucket(bucket_name)
     blob = bucket.blob(file_path)
     return blob.download_as_string().decode('utf-8')
 
 
 def generate_gcs_url(bucket_name, file_path):
+    bucket = storage_client.bucket(bucket_name)
     blob = bucket.blob(file_path)
     return blob.public_url
 
