@@ -1,13 +1,15 @@
-import os
-
+from imports import storage_client, bucket_name
 
 def read_file(file_path):
-    """Reads content from a file and returns it, ensuring it never returns None."""
-    try:
-        with open(file_path, 'r') as file:
-            return file.read()
-    except FileNotFoundError:
-        return ""  # Return an empty string if the file is not found
+    """Fetches content from a file in GCS and returns it."""
+    # Construct the full path for the GCS bucket
+    full_path = f"{bucket_name}/{file_path}"
+    blob = storage_client.bucket(bucket_name).blob(file_path)
+    if blob.exists():
+        return blob.download_as_string().decode('utf-8')
+    else:
+        print(f"File not found: {full_path}")
+        return ""
 
 
 def write_file(file_path, content):
