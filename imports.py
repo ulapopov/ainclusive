@@ -4,7 +4,6 @@ import json
 from datetime import datetime
 from PIL import Image as PILImage
 import openai
-import requests
 from openai import OpenAI
 from flask import Flask, render_template, request, send_from_directory, redirect, url_for
 from flask_socketio import SocketIO
