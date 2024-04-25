@@ -172,14 +172,17 @@ def serve_content(category):
 
     # Read content directly from files
     content = {key: read_file(path).split('\n') if key != 'original_text' else read_file(path) for key, path in file_paths.items()}
+    print("Content loaded:", content)  # Check the contents loaded from files
 
     # Fetch and generate URLs for image files
     image_files = list_gcs_files(bucket_name, f'{base_path}images/')
     image_urls = {file_path: generate_gcs_url(bucket_name, file_path) for file_path in image_files}
+    print("Image URLs:", image_urls)  # Verify that URLs are correct
 
     # Organize images by type: words and ideas
     word_image_urls = {i: image_urls.get(f"{base_path}images/words_{i}.jpg", 'No Image Available') for i, word in enumerate(content['new_words'], start=1)}
     idea_image_urls = {i: image_urls.get(f"{base_path}images/ideas_{i}.jpg", 'No Image Available') for i, idea in enumerate(content['major_ideas'], start=1)}
+    print("Word and Idea Images:", word_image_urls, idea_image_urls)  # Check mappings
 
     # Create pairs with images
     words_and_images = [(word, word_image_urls.get(i)) for i, word in enumerate(content['new_words'], start=1)]
