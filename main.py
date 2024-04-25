@@ -170,6 +170,11 @@ def serve_content(category):
     file_keys = ['original_text', 'major_ideas', 'new_words', 'text_summary', 'fillin', 'not_matching']
     file_paths = {key: f'{base_path}{key}.txt' for key in file_keys}
 
+    content = {}
+    for key, path in file_paths.items():
+        print(f"Attempting to read from: {path}")  # Debug the full path
+        content[key] = read_file(path).split('\n') if key != 'original_text' else read_file(path)
+
     # Read content directly from files
     content = {key: read_file(path).split('\n') if key != 'original_text' else read_file(path) for key, path in file_paths.items()}
     print("Content loaded:", content)  # Check the contents loaded from files
