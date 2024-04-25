@@ -23,18 +23,23 @@ from itertools import zip_longest
 from langdetect import detect
 =======
 from imports import app, socketio, create_storage_client, PILImage, bucket_name, os, json, client
+<<<<<<< HEAD
 >>>>>>> 8276616 (moved imports to imports.py)
+=======
+from document_handler import process_pdf
+>>>>>>> 9437f4a (moved pdf reading to a separate module)
 
 storage_client = create_storage_client()
+
 
 def list_gcs_files(bucket_name, prefix):
     blobs = storage_client.list_blobs(bucket_name, prefix=prefix)
     return [blob.name for blob in blobs]
 
+
 # Function to generate GCS URL
 def gcs_url(bucket_name, path):
     return f"https://storage.googleapis.com/{bucket_name}/{path}"
-
 
 
 # Style for image generation
@@ -62,15 +67,11 @@ def read_or_fetch(filename, fetch_function, *args, **kwargs):
             file.write(content)
         return content
 
-def process_pdf(filename):
-    with open(filename, 'rb') as file:
-        pdf_reader = PyPDF2.PdfReader(file)
-        text = "".join([pdf_reader.pages[page].extract_text() for page in range(len(pdf_reader.pages))])
-    return text, len(pdf_reader.pages)
 
 def get_original_text():
     filename = "original_text.txt"
     return read_or_fetch(filename, fetch_major_ideas)
+
 
 def fetch_major_ideas(text):
     major_ideas_response = client.chat.completions.create(
@@ -82,6 +83,7 @@ def fetch_major_ideas(text):
     major_ideas = major_ideas_response.choices[0].message.content
     return '\n'.join(idea.strip() for idea in major_ideas.split('\n') if idea.strip())
 
+
 def get_major_ideas(text):
     filename = "major_ideas.txt"
     return read_or_fetch(filename, fetch_major_ideas, text)
@@ -90,6 +92,7 @@ def get_major_ideas(text):
 def save_summaries_to_file(summaries, filename='summaries.txt'):
     with open(filename, 'w') as file:
         file.write(summaries)
+
 
 def fetch_summary(major_ideas):
     summaries_response = client.chat.completions.create(
@@ -102,6 +105,7 @@ def fetch_summary(major_ideas):
     )
     summaries = summaries_response.choices[0].message.content.strip()
     return summaries
+
 
 def get_summary(major_ideas):
     filename = "text_summary.txt"
@@ -135,9 +139,11 @@ def identify_new_words(summaries):
     unique_words_str = ', '.join(sorted(unique_words_set))
     return unique_words_str
 
+
 def get_new_words(summary):
     filename = "new_words.txt"
     return read_or_fetch(filename, identify_new_words, summary)
+
 
 def generate_and_save_images(prompts, drive_folder_path="static/images"):
     print(prompts)
@@ -173,15 +179,13 @@ def generate_and_save_images(prompts, drive_folder_path="static/images"):
             traceback.print_exc()
     return saved_images
 
+
 def fetch_text_content_from_gcs(bucket_name, file_path):
-    storage_client = create_storage_client()
-    bucket = storage_client.get_bucket(bucket_name)
     blob = bucket.blob(file_path)
     return blob.download_as_string().decode('utf-8')
 
+
 def generate_gcs_url(bucket_name, file_path):
-    storage_client = create_storage_client()
-    bucket = storage_client.bucket(bucket_name)
     blob = bucket.blob(file_path)
     return blob.public_url
 
@@ -192,15 +196,18 @@ def serve_content(category):
     file_paths = {key: f'{base_path}{key}.txt' for key in file_keys}
 
     # Read content directly from files
-    content = {key: read_file(path).split('\n') if key != 'original_text' else read_file(path) for key, path in file_paths.items()}
+    content = {key: read_file(path).split('\n') if key != 'original_text' else read_file(path) for key, path in
+               file_paths.items()}
 
     # Fetch and generate URLs for image files
     image_files = list_gcs_files(bucket_name, f'{base_path}images/')
     image_urls = {file_path: generate_gcs_url(bucket_name, file_path) for file_path in image_files}
 
     # Organize images by type: words and ideas
-    word_image_urls = {i: image_urls.get(f"{base_path}images/words_{i}.jpg", 'No Image Available') for i, word in enumerate(content['new_words'], start=1)}
-    idea_image_urls = {i: image_urls.get(f"{base_path}images/ideas_{i}.jpg", 'No Image Available') for i, idea in enumerate(content['major_ideas'], start=1)}
+    word_image_urls = {i: image_urls.get(f"{base_path}images/words_{i}.jpg", 'No Image Available') for i, word in
+                       enumerate(content['new_words'], start=1)}
+    idea_image_urls = {i: image_urls.get(f"{base_path}images/ideas_{i}.jpg", 'No Image Available') for i, idea in
+                       enumerate(content['major_ideas'], start=1)}
 
 <<<<<<< HEAD
     # Fetch text data
