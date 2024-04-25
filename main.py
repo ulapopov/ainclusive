@@ -1,4 +1,5 @@
 # Imports
+<<<<<<< HEAD
 import os
 import json
 import sys
@@ -20,45 +21,13 @@ from google.cloud import storage
 from google.oauth2 import service_account
 from itertools import zip_longest
 from langdetect import detect
+=======
+from imports import app, socketio, create_storage_client, PILImage, bucket_name, os, json, client
+>>>>>>> 8276616 (moved imports to imports.py)
 
-app = Flask(__name__)
-
-socketio = SocketIO(app)
-on_heroku = os.environ.get('HEROKU', 'False') == 'True'
-bucket_name = 'ainclusive'
-
-def get_gcp_credentials():
-    if on_heroku:
-        creds_json = os.environ.get("GCP_CREDENTIALS")
-        if creds_json:
-            creds_dict = json.loads(creds_json)
-            return service_account.Credentials.from_service_account_info(creds_dict)
-        else:
-            raise Exception('GCP credentials not found in environment variable.')
-    # If not on Heroku, return None to use default credentials
-    return None
-
-
-def create_storage_client():
-    if on_heroku:
-        credentials = get_gcp_credentials()
-        return storage.Client(credentials=credentials)
-    else:
-        # Locally, we assume default credentials are set up properly (gcloud auth application-default login)
-        return None
-
-# Now, whenever you need a storage client, call create_storage_client():
 storage_client = create_storage_client()
 
-
-# Setting API Key
-openai.api_key = os.getenv('OPENAI_API_KEY_TAROT')
-client = OpenAI(
-    api_key=openai.api_key,
-)
-
 def list_gcs_files(bucket_name, prefix):
-    storage_client = create_storage_client()
     blobs = storage_client.list_blobs(bucket_name, prefix=prefix)
     return [blob.name for blob in blobs]
 
