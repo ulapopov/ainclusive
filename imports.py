@@ -13,6 +13,8 @@ from google.oauth2 import service_account
 # App configuration
 app = Flask(__name__)
 socketio = SocketIO(app)
+
+storage_client = storage.Client()
 bucket_name = 'ainclusive'  # Global bucket name used across your application
 
 

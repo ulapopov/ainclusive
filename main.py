@@ -1,8 +1,6 @@
-from imports import app, socketio, create_storage_client, PILImage, bucket_name, os, json, client, request, render_template, redirect, url_for
+from imports import app, socketio, storage_client, PILImage, bucket_name, os, json, client, request, render_template, redirect, url_for
 from document_handler import process_pdf
 from file_utils import read_file, write_file
-
-storage_client = create_storage_client()
 
 
 def list_gcs_files(bucket_name, prefix):
@@ -164,36 +162,53 @@ def generate_gcs_url(bucket_name, file_path):
     blob = bucket.blob(file_path)
     return blob.public_url
 
+
+def read_content_files(base_path):
+    """Reads content from files and returns them."""
+    file_keys = ['original_text', 'major_ideas', 'new_words', 'text_summary', 'fillin', 'not_matching']
+    file_paths = {key: f'{base_path}{key}.txt' for key in file_keys}
+    content = {}
+    for key, path in file_paths.items():
+        content[key] = read_file(path).split('\n') if key != 'original_text' else read_file(path)
+    return content
+
+
+def fetch_image_urls(bucket_name, base_path):
+    """Fetches image URLs from GCS."""
+    image_files = list_gcs_files(bucket_name, f'{base_path}images/')
+    return [generate_gcs_url(bucket_name, file_path) for file_path in image_files]
+
+
+def filter_sort_images(image_urls, type_prefix):
+    """Filters and sorts image URLs based on the prefix ('words_' or 'ideas_')."""
+    filtered_urls = [url for url in image_urls if type_prefix in url]
+    return {int(url.split('_')[1].split('.')[0]): url for url in filtered_urls}
+
+
+def pair_content_with_images(content_list, image_dict):
+    """Pairs each content item with its corresponding image, defaulting to 'No Image Available'."""
+    return [(content, image_dict.get(i + 1, 'No Image Available')) for i, content in enumerate(content_list)]
+
+
 @app.route('/display/<category>')
 def serve_content(category):
     base_path = f'{category}/'
-    file_keys = ['original_text', 'major_ideas', 'new_words', 'text_summary', 'fillin', 'not_matching']
-    file_paths = {key: f'{base_path}{key}.txt' for key in file_keys}
 
-    content = {}
-    for key, path in file_paths.items():
-        print(f"Attempting to read from: {path}")  # Debug the full path
-        content[key] = read_file(path).split('\n') if key != 'original_text' else read_file(path)
-
-    # Read content directly from files
-    content = {key: read_file(path).split('\n') if key != 'original_text' else read_file(path) for key, path in file_paths.items()}
-    print("Content loaded:", content)  # Check the contents loaded from files
+    # Read content from files
+    content = read_content_files(base_path)
 
     # Fetch and generate URLs for image files
-    image_files = list_gcs_files(bucket_name, f'{base_path}images/')
-    image_urls = {file_path: generate_gcs_url(bucket_name, file_path) for file_path in image_files}
-    print("Image URLs:", image_urls)  # Verify that URLs are correct
+    image_urls = fetch_image_urls(bucket_name, base_path)
 
-    # Organize images by type: words and ideas
-    word_image_urls = {i: image_urls.get(f"{base_path}images/words_{i}.jpg", 'No Image Available') for i, word in enumerate(content['new_words'], start=1)}
-    idea_image_urls = {i: image_urls.get(f"{base_path}images/ideas_{i}.jpg", 'No Image Available') for i, idea in enumerate(content['major_ideas'], start=1)}
-    print("Word and Idea Images:", word_image_urls, idea_image_urls)  # Check mappings
+    # Filter and sort word and idea images
+    word_image_dict = filter_sort_images(image_urls, 'words_')
+    idea_image_dict = filter_sort_images(image_urls, 'ideas_')
 
     # Create pairs with images
-    words_and_images = [(word, word_image_urls.get(i)) for i, word in enumerate(content['new_words'], start=1)]
-    ideas_and_images = [(idea, idea_image_urls.get(i)) for i, idea in enumerate(content['major_ideas'], start=1)]
+    words_and_images = pair_content_with_images(content['new_words'], word_image_dict)
+    ideas_and_images = pair_content_with_images(content['major_ideas'], idea_image_dict)
 
-    # Render the template with all gathered data
+    # Render the template with structured content and image pairs
     return render_template('display.html', words_and_images=words_and_images, text=content['original_text'],
                            ideas_and_images=ideas_and_images, summaries='\n'.join(content['text_summary']),
                            game1_txt='\n'.join(content['fillin']), game2_txt='\n'.join(content['not_matching']))
