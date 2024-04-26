@@ -17,28 +17,30 @@ socketio = SocketIO(app)
 storage_client = storage.Client()
 bucket_name = 'ainclusive'  # Global bucket name used across your application
 
-
 # Setting API Key
 openai.api_key = os.getenv('OPENAI_API_KEY_TAROT')
 client = OpenAI(
     api_key=openai.api_key,
 )
 
-# Function to get Google Cloud credentials
-def get_gcp_credentials():
-    on_heroku = os.environ.get('HEROKU', 'False') == 'True'
-    if on_heroku:
-        creds_json = os.environ.get("GCP_CREDENTIALS")
-        if creds_json:
-            creds_dict = json.loads(creds_json)
-            return service_account.Credentials.from_service_account_info(creds_dict)
-        else:
-            raise Exception('GCP credentials not found in environment variable.')
-    return None
+import logging
 
-# Function to create a storage client
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+
+
+def get_gcp_credentials():
+    creds_json = os.environ.get("GCP_CREDENTIALS")
+    if creds_json:
+        creds_dict = json.loads(creds_json)
+        logging.info("GCP credentials have been loaded successfully.")
+        return service_account.Credentials.from_service_account_info(creds_dict)
+    else:
+        logging.error('GCP credentials not found in environment variable.')
+        raise Exception('GCP credentials not found in environment variable.')
+
+
 def create_storage_client():
-    if os.environ.get('HEROKU', 'False') == 'True':
-        credentials = get_gcp_credentials()
-        return storage.Client(credentials=credentials)
-    return storage.Client()  # Assumes default credentials are used otherwise
+    credentials = get_gcp_credentials()
+    return storage.Client(credentials=credentials)
+
