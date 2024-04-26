@@ -1,6 +1,6 @@
 from imports import app, socketio, storage_client, PILImage, bucket_name, os, json, client, request, render_template, redirect, url_for
 from document_handler import process_pdf
-from file_utils import read_file, write_file
+from file_utils import read_file, write_file, read_content_files, save_summaries_to_file
 
 
 def list_gcs_files(bucket_name, prefix):
@@ -26,19 +26,6 @@ The target audience is 4 year old toddlers.
 The images should be colorful."""
 
 
-def read_or_fetch(filename, fetch_function, *args, **kwargs):
-    dir = '/Users/ula/PycharmProjects/AInclusive/HedgeHog'
-    full_path = os.path.join(dir, filename)  # Combine the directory and filename
-    if os.path.exists(full_path):
-        with open(full_path, 'r') as file:
-            return file.read()
-    else:
-        content = fetch_function(*args, **kwargs)
-        with open(full_path, 'w') as file:
-            file.write(content)
-        return content
-
-
 def get_original_text():
     filename = "original_text.txt"
     return read_or_fetch(filename, fetch_major_ideas)
@@ -58,11 +45,6 @@ def fetch_major_ideas(text):
 def get_major_ideas(text):
     filename = "major_ideas.txt"
     return read_or_fetch(filename, fetch_major_ideas, text)
-
-
-def save_summaries_to_file(summaries, filename='summaries.txt'):
-    with open(filename, 'w') as file:
-        file.write(summaries)
 
 
 def fetch_summary(major_ideas):
@@ -161,16 +143,6 @@ def generate_gcs_url(bucket_name, file_path):
     bucket = storage_client.bucket(bucket_name)
     blob = bucket.blob(file_path)
     return blob.public_url
-
-
-def read_content_files(base_path):
-    """Reads content from files and returns them."""
-    file_keys = ['original_text', 'major_ideas', 'new_words', 'text_summary', 'fillin', 'not_matching']
-    file_paths = {key: f'{base_path}{key}.txt' for key in file_keys}
-    content = {}
-    for key, path in file_paths.items():
-        content[key] = read_file(path).split('\n') if key != 'original_text' else read_file(path)
-    return content
 
 
 def fetch_image_urls(bucket_name, base_path):
