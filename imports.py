@@ -25,22 +25,25 @@ client = OpenAI(
 
 import logging
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-
+# Set up basic configuration for logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def get_gcp_credentials():
     creds_json = os.environ.get("GCP_CREDENTIALS")
     if creds_json:
         creds_dict = json.loads(creds_json)
-        logging.info("GCP credentials have been loaded successfully.")
-        return service_account.Credentials.from_service_account_info(creds_dict)
+        logging.info("GCP credentials loaded and parsed successfully.")
+        credentials = service_account.Credentials.from_service_account_info(creds_dict)
+        logging.info(f"Credentials are: {credentials}")
+        return credentials
     else:
         logging.error('GCP credentials not found in environment variable.')
         raise Exception('GCP credentials not found in environment variable.')
 
-
 def create_storage_client():
     credentials = get_gcp_credentials()
-    return storage.Client(credentials=credentials)
+    logging.info(f"Creating storage client with credentials: {credentials}")
+    client = storage.Client(credentials=credentials)
+    logging.info("Storage client created successfully.")
+    return client
 
