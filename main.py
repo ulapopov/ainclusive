@@ -1,6 +1,5 @@
 from imports import app, socketio, client, request, render_template, redirect, url_for, bucket_name
 from imports import fetch_image_urls, filter_sort_images, pair_content_with_images
-from document_handler import process_pdf
 from file_utils import read_content_files, write_file
 
 @app.route('/', methods=['GET', 'POST'])
