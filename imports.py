@@ -47,6 +47,42 @@ try:
 except Exception as e:
     logging.error(f"Failed to create storage client: {str(e)}")
 
+
+def list_gcs_files(bucket_name, prefix):
+    blobs = storage_client.list_blobs(bucket_name, prefix=prefix)
+    return [blob.name for blob in blobs]
+
+
+def fetch_text_content_from_gcs(bucket_name, file_path):
+    bucket = storage_client.bucket(bucket_name)
+    blob = bucket.blob(file_path)
+    return blob.download_as_string().decode('utf-8')
+
+
+def generate_gcs_url(bucket_name, file_path):
+    bucket = storage_client.bucket(bucket_name)
+    blob = bucket.blob(file_path)
+    return blob.public_url
+
+
+def fetch_image_urls(bucket_name, base_path):
+    """Fetches image URLs from GCS."""
+    image_files = list_gcs_files(bucket_name, f'{base_path}images/')
+    return [generate_gcs_url(bucket_name, file_path) for file_path in image_files]
+
+
+def filter_sort_images(image_urls, type_prefix):
+    """Filters and sorts image URLs based on the prefix ('words_' or 'ideas_')."""
+    filtered_urls = [url for url in image_urls if type_prefix in url]
+    return {int(url.split('_')[1].split('.')[0]): url for url in filtered_urls}
+
+
+def pair_content_with_images(content_list, image_dict):
+    """Pairs each content item with its corresponding image, defaulting to 'No Image Available'."""
+    return [(content, image_dict.get(i + 1, 'No Image Available')) for i, content in enumerate(content_list)]
+
+
+
 # Other configurations
 openai.api_key = os.getenv('OPENAI_API_KEY_TAROT')
 client = OpenAI(
