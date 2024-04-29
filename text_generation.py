@@ -1,5 +1,5 @@
-from file_utils import save_processed_data_to_gcp
-from image_generation import generate_images_for_ideas_and_terms
+from file_utils import write_file
+from image_generation import generate_and_save_images
 from imports import client
 
 
@@ -36,7 +36,7 @@ def identify_words_needing_explanation(text):
     return words
 
 
-def generate_content(text, category):
+def generate_text_content(text, category):
     summary = generate_summary(text)
     main_ideas = identify_main_ideas(summary)
     terms = identify_words_needing_explanation(summary)

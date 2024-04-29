@@ -42,7 +42,6 @@ LANG_PATTERN = re.compile('^[a-z_]+$')
 RGB_MODE = 'RGB'
 SUPPORTED_FORMATS = {
     'JPEG',
-    'JPEG2000',
     'PNG',
     'PBM',
     'PGM',
@@ -89,7 +88,7 @@ class TesseractNotFoundError(EnvironmentError):
     def __init__(self):
         super().__init__(
             f"{tesseract_cmd} is not installed or it's not in your PATH."
-            f' See README file for more information.',
+            + ' See README file for more information.',
         )
 
 
@@ -158,12 +157,12 @@ def get_errors(error_string):
 
 def cleanup(temp_name):
     """Tries to remove temp files by filename wildcard path."""
-    for filename in iglob(f'{temp_name}*' if temp_name else temp_name):
+    for filename in iglob(temp_name + '*' if temp_name else temp_name):
         try:
             remove(filename)
         except OSError as e:
             if e.errno != ENOENT:
-                raise
+                raise e
 
 
 def prepare(image):
@@ -195,7 +194,7 @@ def save(image):
                 yield f.name, realpath(normpath(normcase(image)))
                 return
             image, extension = prepare(image)
-            input_file_name = f'{f.name}_input{extsep}{extension}'
+            input_file_name = f.name + extsep + extension
             image.save(input_file_name, format=image.format)
             yield f.name, input_file_name
     finally:
@@ -255,9 +254,8 @@ def run_tesseract(
         proc = subprocess.Popen(cmd_args, **subprocess_args())
     except OSError as e:
         if e.errno != ENOENT:
-            raise
-        else:
-            raise TesseractNotFoundError()
+            raise e
+        raise TesseractNotFoundError()
 
     with timeout_manager(proc, timeout) as error_string:
         if proc.returncode:
@@ -286,7 +284,7 @@ def run_and_get_output(
         }
 
         run_tesseract(**kwargs)
-        filename = f"{kwargs['output_filename_base']}{extsep}{extension}"
+        filename = kwargs['output_filename_base'] + extsep + extension
         with open(filename, 'rb') as output_file:
             if return_bytes:
                 return output_file.read()
@@ -315,14 +313,9 @@ def file_to_dict(tsv, cell_delimiter, str_col_idx):
             if len(row) <= i:
                 continue
 
-            if i != str_col_idx:
-                try:
-                    val = int(float(row[i]))
-                except ValueError:
-                    val = row[i]
-            else:
-                val = row[i]
-
+            val = row[i]
+            if row[i].isdigit() and i != str_col_idx:
+                val = int(row[i])
             result[head].append(val)
 
     return result

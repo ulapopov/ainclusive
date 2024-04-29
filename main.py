@@ -1,6 +1,12 @@
 from imports import app, socketio, client, request, render_template, redirect, url_for, bucket_name
-from imports import fetch_image_urls, filter_sort_images, pair_content_with_images
+from imports import fetch_image_urls, filter_sort_images, pair_content_with_images, content_exists
 from file_utils import read_content_files, write_file
+from text_generation import generate_text_content
+from image_generation import generate_and_save_images
+
+# Global flags for (re)generation
+FORCE_REGENERATE_TEXT = False
+FORCE_REGENERATE_IMAGES = False
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -23,6 +29,17 @@ def index():
 def serve_content(category):
     base_path = f'{category}/'
     content = read_content_files(base_path)
+
+    # Check if text needs to be regenerated
+    if FORCE_REGENERATE_TEXT or not content_exists(bucket_name, base_path, 'text_summary.txt'):
+        # Placeholder for generate_text function
+        generate_text_content(content['original_text'])
+
+    # Check if images need to be regenerated
+    if FORCE_REGENERATE_IMAGES or not content_exists(bucket_name, base_path, 'images/'):
+        # Placeholder for generate_images function
+        generate_and_save_images(content['major_ideas'])
+
     image_urls = fetch_image_urls(bucket_name, base_path)
     word_image_dict = filter_sort_images(image_urls, 'words_')
     idea_image_dict = filter_sort_images(image_urls, 'ideas_')

@@ -22,6 +22,7 @@ socketio = SocketIO(app)
 # Log application start
 logging.info("Application configuration started.")
 
+
 def get_gcp_credentials():
     creds_json = os.environ.get("GCP_CREDENTIALS")
     if creds_json:
@@ -33,6 +34,7 @@ def get_gcp_credentials():
     else:
         logging.error('GCP credentials not found in environment variable.')
         raise Exception('GCP credentials not found in environment variable.')
+
 
 def create_storage_client():
     logging.info("Attempting to create a storage client...")
@@ -69,6 +71,12 @@ def fetch_image_urls(bucket_name, base_path):
     """Fetches image URLs from GCS."""
     image_files = list_gcs_files(bucket_name, f'{base_path}images/')
     return [generate_gcs_url(bucket_name, file_path) for file_path in image_files]
+
+
+def content_exists(bucket_name, base_path, file_pattern):
+    """Check if specific content exists in GCP bucket."""
+    image_files = list_gcs_files(bucket_name, f'{base_path}{file_pattern}')
+    return len(image_files) > 0
 
 
 def filter_sort_images(image_urls, type_prefix):
