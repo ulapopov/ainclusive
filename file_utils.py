@@ -1,5 +1,5 @@
-from imports import storage_client, bucket_name
-import logging
+from imports import storage_client, bucket_name, logging
+
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -19,14 +19,17 @@ def read_file(file_path):
         return ""
 
 
-def write_file(file_path, content):
-    """Writes content to a file in GCS. Logs the operation status."""
+def write_file(file_path, content, is_binary=False):
     try:
         blob = storage_client.bucket(bucket_name).blob(file_path)
-        blob.upload_from_string(content.encode('utf-8'))
+        if is_binary:
+            blob.upload_from_string(content)  # Content is already binary
+        else:
+            blob.upload_from_string(content.encode('utf-8'))  # Encode content to bytes
         logging.info(f"File written to: {bucket_name}/{file_path}")
     except Exception as e:
         logging.error(f"Failed to write file {bucket_name}/{file_path}: {e}")
+
 
 
 def read_content_files(base_path):
@@ -35,7 +38,11 @@ def read_content_files(base_path):
     file_paths = {key: f'{base_path}{key}.txt' for key in file_keys}
     content = {}
     for key, path in file_paths.items():
-        content[key] = read_file(path).split('\n') if key != 'original_text' else read_file(path)
+        try:
+            file_content = read_file(path)
+            content[key] = file_content.split('\n') if key != 'original_text' else file_content
+        except FileNotFoundError:
+            content[key] = [] if key != 'original_text' else ""
     return content
 
 

@@ -50,9 +50,7 @@ except Exception as e:
     logging.error(f"Failed to create storage client: {str(e)}")
 
 
-def list_gcs_files(bucket_name, prefix):
-    blobs = storage_client.list_blobs(bucket_name, prefix=prefix)
-    return [blob.name for blob in blobs]
+
 
 
 def fetch_text_content_from_gcs(bucket_name, file_path):
@@ -68,15 +66,28 @@ def generate_gcs_url(bucket_name, file_path):
 
 
 def fetch_image_urls(bucket_name, base_path):
-    """Fetches image URLs from GCS."""
-    image_files = list_gcs_files(bucket_name, f'{base_path}images/')
+    """Fetches image URLs from GCS. Ensures that the path ends correctly with 'images/'."""
+    if not base_path.endswith('images/'):
+        base_path += 'images/'
+    image_files = list_gcs_files(bucket_name, base_path)
     return [generate_gcs_url(bucket_name, file_path) for file_path in image_files]
 
 
-def content_exists(bucket_name, base_path, file_pattern):
-    """Check if specific content exists in GCP bucket."""
-    image_files = list_gcs_files(bucket_name, f'{base_path}{file_pattern}')
-    return len(image_files) > 0
+
+def list_gcs_files(bucket_name, prefix):
+    blobs = storage_client.list_blobs(bucket_name, prefix=prefix)
+    file_names = [blob.name for blob in blobs]
+    print(f"Listing files under prefix {prefix}: {file_names}")
+    return file_names
+
+
+def content_exists(bucket_name, base_path, file_pattern=None):
+    # Handle the case where file_pattern might be None by defaulting to an empty string
+    full_path = f'{base_path}{file_pattern}' if file_pattern else base_path
+    image_files = list_gcs_files(bucket_name, full_path)
+    exists = len(image_files) > 0
+    print(f"Checking content existence in {full_path}: {exists}")
+    return exists
 
 
 def filter_sort_images(image_urls, type_prefix):

@@ -1,6 +1,6 @@
 from file_utils import write_file
 from image_generation import generate_and_save_images
-from imports import client
+from imports import client, datetime
 
 
 def generate_summary(text):
@@ -37,8 +37,16 @@ def identify_words_needing_explanation(text):
 
 
 def generate_text_content(text, category):
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    unique_path = f"{category}/{timestamp}/"
     summary = generate_summary(text)
     main_ideas = identify_main_ideas(summary)
     terms = identify_words_needing_explanation(summary)
-    generate_images_for_ideas_and_terms(main_ideas, terms)
-    save_processed_data_to_gcp(summary, main_ideas, terms, category)
+
+    # Save summary, main ideas, and terms in unique path
+    write_file(f"{unique_path}summary.txt", summary)
+    write_file(f"{unique_path}main_ideas.txt", main_ideas)
+    write_file(f"{unique_path}terms.txt", terms)
+
+    # Generate and save images in a subdirectory
+    generate_and_save_images(main_ideas, terms, f"{unique_path}images/")
