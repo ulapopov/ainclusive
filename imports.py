@@ -10,10 +10,11 @@ from datetime import datetime
 from PIL import Image as PILImage
 import openai
 from openai import OpenAI
-from flask import Flask, render_template, request, send_from_directory, redirect, url_for
+from flask import Flask, render_template, request, send_from_directory, redirect, url_for, session
 from flask_socketio import SocketIO
 from google.cloud import storage
 from google.oauth2 import service_account
+from langdetect import detect
 
 # App configuration
 app = Flask(__name__)
@@ -77,7 +78,7 @@ def fetch_image_urls(bucket_name, base_path):
 def list_gcs_files(bucket_name, prefix):
     blobs = storage_client.list_blobs(bucket_name, prefix=prefix)
     file_names = [blob.name for blob in blobs]
-    print(f"Listing files under prefix {prefix}: {file_names}")
+    print(f"list_gcs_files(): Listing files under prefix {prefix}: {file_names}")
     return file_names
 
 
