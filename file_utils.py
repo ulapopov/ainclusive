@@ -62,6 +62,16 @@ def save_summaries_to_file(summaries, filename='summaries.txt'):
         logging.error(f"Failed to save summaries to {bucket_name}/{full_path}: {e}")
 
 
+# Define a mapping from language codes to full language names
+language_map = {
+    'he': 'Hebrew',
+    'en': 'English',
+    'fr': 'French',
+    'es': 'Spanish',
+    # Add more mappings as needed
+}
+
+
 def determine_language(text, n=100):  # n defaults to 100, adjust as needed
     try:
         # Log the first n characters of the text to inspect what is being processed

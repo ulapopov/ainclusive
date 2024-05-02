@@ -9,7 +9,7 @@ from extract_text import extract_text_and_images
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'a_default_secret_key')
 
 # Global flags for (re)generation
-FORCE_REGENERATE_TEXT = False
+FORCE_REGENERATE_TEXT = True
 FORCE_REGENERATE_IMAGES = False
 READ_PDF = False  # Set to True if PDF reading and processing is needed
 
