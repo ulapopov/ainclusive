@@ -120,7 +120,6 @@ def serve_content(category):
                            align_class=align_class)
 
 
-
 if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
     socketio.run(app, debug=True)
