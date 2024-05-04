@@ -4,6 +4,7 @@ import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logging.info("Logging is configured.")
 
+import re
 import os
 import json
 from datetime import datetime
@@ -22,6 +23,14 @@ socketio = SocketIO(app)
 
 # Log application start
 logging.info("Application configuration started.")
+
+
+def clean_text(text):
+    # Remove numbers and extra spaces
+    cleaned_text = re.sub(r'\d+\.\s+', '', text)  # This regex removes numbers followed by dots and spaces
+    # Replace multiple newlines with a single newline (optional, based on your needs)
+    cleaned_text = re.sub(r'\n+', '\n', cleaned_text)
+    return cleaned_text
 
 
 def get_gcp_credentials():

@@ -1,6 +1,6 @@
 from file_utils import write_file, determine_language, language_map
 from image_generation import generate_and_save_images
-from imports import client, datetime, session, logging, openai
+from imports import client, datetime, session, logging, openai, clean_text
 
 
 def generate_summary(text, language):
@@ -23,7 +23,6 @@ def identify_main_ideas(text, language):
                      f"provide a concise summary that is 1-2 sentences long. Use simple words suitable for a 3-4 year old toddler, " \
                      f"avoiding complex phrases or terminology. The summaries should clearly reflect key points from the text " \
                      f"and be easy to understand. Ensure the grammar is correct. Use the same language as the source (English). " \
-                     f"Here’s how you might structure your response: '1. [Summary of Idea 1] 2. [Summary of Idea 2] 3. [Summary of Idea 3].' " \
                      f"The text: {text}"
     prompt_hebrew = (
         f"זהה 3-4 רעיונות עיקריים בטקסט שלמטה וספק תקציר תמציתי של משפט או שניים לכל רעיון. "
@@ -31,7 +30,8 @@ def identify_main_ideas(text, language):
         f"התקצירים צריכים לשקף בבירור את הנקודות המרכזיות מהטקסט ולהיות קלים להבנה. "
         f"חשוב מאוד לשמור על דיוק דקדוקי בכתיבת התגובה. אנא בדוק את הדקדוק בקפידה. "
         f"השתמש בשפה העברית בלבד. הנה דוגמה למבנה התגובה: "
-        f"'1. [תקציר רעיון 1] 2. [תקציר רעיון 2] 3. [תקציר רעיון 3].' הטקסט: {text}"
+        f"חשוב מאוד לשמור על דיוק דקדוקי בכתיבת התגובה. אנא בדוק את הדקדוק בקפידה. "
+        f"השתמש בשפה העברית בלבד. הטקסט: {text}"
     )
 
     prompt = prompt_hebrew if language == "Hebrew" else prompt_english
@@ -68,7 +68,7 @@ def identify_words_needing_explanation(text, language):
         messages=[{"role": "system",
                    "content": f"Identify 5-10 words in the following text that might be too difficult for a toddler to understand. "
                               f"For each word, provide a very simple explanation or synonym in {language}. "
-                              f"Use straightforward language suitable for a 3-4 year old. Avoid complex phrases or terminology. "
+                              f"Use straightforward language suitable for a 3-4 year old. Avoid complex phrases or terminology, and listing the words numerically. "
                               f"Aim for clear and simple explanations, similar to how you would explain things to a young child. "
                               f"For example, if the word is 'thought', explain it as 'thinking about something in your head'. "
                               f"Ensure the grammar is correct. Use the same language as the source ({language}). "
@@ -94,8 +94,10 @@ def generate_text_content(text, category):
         language = language_map.get(language_code, 'English')
 
         summary = generate_summary(text, language)
-        main_ideas = identify_main_ideas(summary, language)
-        terms = identify_words_needing_explanation(summary, language)
+        major_ideas = identify_main_ideas(summary, language)
+        cleaned_major_ideas = clean_text(major_ideas)
+        new_words = identify_words_needing_explanation(summary, language)
+        cleaned_new_words = clean_text(new_words)
     except openai.APIError as e:  # This captures all client-related issues including bad requests, rate limits, etc.
         logging.error(f"OpenAI API is currently not accessible. Error: {e}")
         summary = "Summary not available due to API access issue."
@@ -104,7 +106,7 @@ def generate_text_content(text, category):
 
     # Save summary, main ideas, and terms in unique path
     write_file(f"{unique_path}text_summary.txt", summary)
-    write_file(f"{unique_path}major_ideas.txt", main_ideas)
-    write_file(f"{unique_path}new_words.txt", terms)
+    write_file(f"{unique_path}major_ideas.txt", cleaned_major_ideas)
+    write_file(f"{unique_path}new_words.txt", cleaned_new_words)
 
     logging.info(f"Text content generated and saved to {unique_path}")
