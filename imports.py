@@ -102,8 +102,21 @@ def content_exists(bucket_name, base_path, file_pattern=None):
 
 def filter_sort_images(image_urls, type_prefix):
     """Filters and sorts image URLs based on the prefix ('words_' or 'ideas_')."""
+    logging.debug(f"Starting filter_sort_images with type_prefix: {type_prefix}")
+
+    # Filter URLs by prefix
     filtered_urls = [url for url in image_urls if type_prefix in url]
-    return {int(url.split('_')[1].split('.')[0]): url for url in filtered_urls}
+    logging.debug(f"Filtered URLs: {filtered_urls}")
+
+    # Attempt to create a dictionary with int keys from URL parts
+    try:
+        sorted_images = {int(url.split('_')[1].split('.')[0]): url for url in filtered_urls}
+        logging.debug("Sorted images dictionary created successfully.")
+    except ValueError as e:
+        logging.error(f"Error converting URL part to integer: {e}")
+        sorted_images = {}  # Return an empty dictionary or handle the error as needed
+
+    return sorted_images
 
 
 def pair_content_with_images(content_list, image_dict):
