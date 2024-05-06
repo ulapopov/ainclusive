@@ -9,7 +9,7 @@ from extract_text import extract_text_and_images
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'a_default_secret_key')
 
 # Global flags for (re)generation
-FORCE_REGENERATE_TEXT = True
+FORCE_REGENERATE_TEXT = False
 FORCE_REGENERATE_IMAGES = False
 READ_PDF = False  # Set to True if PDF reading and processing is needed
 
@@ -106,7 +106,8 @@ def serve_content(category):
     # Generate and save images if required
     if FORCE_REGENERATE_IMAGES:
         logging.info("Regenerating images...")
-        generate_and_save_images(content['major_ideas'], "ideas", images_base_path)
+        generate_and_save_images("ideas", content['major_ideas'], images_base_path)
+        generate_and_save_images("words", content['new_words'], images_base_path)
 
     image_urls = fetch_image_urls(bucket_name, images_base_path)
     word_image_dict = filter_sort_images(image_urls, 'words_')

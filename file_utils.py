@@ -23,9 +23,9 @@ def write_file(file_path, content, is_binary=False):
     try:
         blob = storage_client.bucket(bucket_name).blob(file_path)
         if is_binary:
-            blob.upload_from_string(content)  # Content is already binary
+            blob.upload_from_file(content)  # Upload binary content from file
         else:
-            blob.upload_from_string(content.encode('utf-8'))  # Encode content to bytes
+            blob.upload_from_string(content)  # Upload text content
         logging.info(f"write_file(): File written to: {bucket_name}/{file_path}")
     except Exception as e:
         logging.error(f"write_file(): Failed to write file {bucket_name}/{file_path}: {e}")

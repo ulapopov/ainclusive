@@ -13,7 +13,7 @@ def generate_and_save_images(type, prompts, gcp_bucket_folder_path):
     for index, prompt in enumerate(prompts, start=1):
         card_name = f"{type}_{index}"  # Use type to differentiate image files
         image_params = {
-            "model": "dall-e-3",
+            "model": "dall-e-2",
             "n": 1,
             "size": "1024x1024",
             "prompt": (f"""Please generate a very simple and colorful image illustrating: {prompt}. 
@@ -25,14 +25,14 @@ def generate_and_save_images(type, prompts, gcp_bucket_folder_path):
             images_response = client.images.generate(**image_params)
             base64_image = images_response.data[0].model_dump()['b64_json']
             image = PILImage.open(BytesIO(base64.b64decode(base64_image)))
-            filename = f"{gcp_bucket_folder_path}/{card_name}.png"
+            filename = f"{gcp_bucket_folder_path}{card_name}.webp"
             print(filename)
 
             # Convert image to bytes and save using write_file from file_utils.py
             img_byte_arr = BytesIO()
-            image.save(img_byte_arr, format='PNG')
+            image.save(img_byte_arr, format='WebP')
             img_byte_arr = img_byte_arr.getvalue()
-            write_file(filename, img_byte_arr)  # Save to GCP
+            write_file(filename, img_byte_arr, is_binary=True)  # Save to GCP
 
             print("Image saved as", filename)
             saved_images.append(filename)  # Store the filename for later use

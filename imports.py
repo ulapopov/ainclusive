@@ -117,5 +117,5 @@ openai.api_key = os.getenv('OPENAI_API_KEY_TAROT')
 client = OpenAI(
     api_key=openai.api_key,
 )
-bucket_name = 'ainclusive'  # Global bucket name used across your application
+bucket_name = 'ula_content'  # Global bucket name used across your application
 logging.info("Finished setting up application.")
