@@ -101,28 +101,9 @@ def content_exists(bucket_name, base_path, file_pattern=None):
 
 
 def filter_sort_images(image_urls, type_prefix):
-    """Filters and sorts image URLs based on the prefix ('words_' or 'ideas_')."""
-    logging.debug(f"Starting filter_sort_images with type_prefix: {type_prefix}")
-
-    # Filter URLs by prefix
-    filtered_urls = [url for url in image_urls if type_prefix in url]
-    logging.debug(f"Filtered URLs: {filtered_urls}")
-
-    # Create a dictionary with int keys from URL parts
-    sorted_images = {}
-    for url in filtered_urls:
-        try:
-            # Extracting the number right after the prefix
-            number_part = url.split(type_prefix)[1].split('_')[1]
-            # Check if the extracted part is a digit and convert it to integer
-            if number_part.isdigit():
-                sorted_images[int(number_part)] = url
-            else:
-                logging.error(f"URL does not contain a valid integer part after '{type_prefix}': {url}")
-        except IndexError as e:
-            logging.error(f"Error processing URL: {url}, error: {e}")
-
-    logging.debug("Sorted images dictionary created successfully.")
+    """Filters and sorts image URLs based on the prefix ('words_' or 'ideas_'), followed by a number."""
+    filtered_urls = [url for url in image_urls if type_prefix in url.split('/')[-1]]
+    sorted_images = {int(url.split('/')[-1].split('_')[1].split('.')[0]): url for url in filtered_urls}
     return sorted_images
 
 
