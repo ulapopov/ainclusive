@@ -108,14 +108,21 @@ def filter_sort_images(image_urls, type_prefix):
     filtered_urls = [url for url in image_urls if type_prefix in url]
     logging.debug(f"Filtered URLs: {filtered_urls}")
 
-    # Attempt to create a dictionary with int keys from URL parts
-    try:
-        sorted_images = {int(url.split('_')[1].split('.')[0]): url for url in filtered_urls}
-        logging.debug("Sorted images dictionary created successfully.")
-    except ValueError as e:
-        logging.error(f"Error converting URL part to integer: {e}")
-        sorted_images = {}  # Return an empty dictionary or handle the error as needed
+    # Create a dictionary with int keys from URL parts
+    sorted_images = {}
+    for url in filtered_urls:
+        try:
+            # Extracting the number right after the prefix
+            number_part = url.split(type_prefix)[1].split('_')[1]
+            # Check if the extracted part is a digit and convert it to integer
+            if number_part.isdigit():
+                sorted_images[int(number_part)] = url
+            else:
+                logging.error(f"URL does not contain a valid integer part after '{type_prefix}': {url}")
+        except IndexError as e:
+            logging.error(f"Error processing URL: {url}, error: {e}")
 
+    logging.debug("Sorted images dictionary created successfully.")
     return sorted_images
 
 
