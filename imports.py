@@ -7,7 +7,7 @@ logging.info("Logging is configured.")
 import re
 import os
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from PIL import Image as PILImage
 import openai
 from openai import OpenAI
@@ -39,11 +39,22 @@ def get_gcp_credentials():
         creds_dict = json.loads(creds_json)
         logging.info("GCP credentials loaded and parsed successfully.")
         credentials = service_account.Credentials.from_service_account_info(creds_dict)
-        logging.info(f"Credentials are: {credentials}")
         return credentials
     else:
         logging.error('GCP credentials not found in environment variable.')
         raise Exception('GCP credentials not found in environment variable.')
+
+
+def generate_signed_url(bucket_name, blob_name, expiration=3600):
+    try:
+        credentials = get_gcp_credentials()
+        storage_client = storage.Client(credentials=credentials)
+        bucket = storage_client.bucket(bucket_name)
+        blob = bucket.blob(blob_name)
+        return blob.generate_signed_url(expiration=timedelta(seconds=expiration), method='GET')
+    except Exception as e:
+        logging.error(f"Failed to generate signed URL for {blob_name}: {e}")
+        raise
 
 
 def create_storage_client():
@@ -60,34 +71,25 @@ except Exception as e:
     logging.error(f"Failed to create storage client: {str(e)}")
 
 
-
-
-
 def fetch_text_content_from_gcs(bucket_name, file_path):
     bucket = storage_client.bucket(bucket_name)
     blob = bucket.blob(file_path)
     return blob.download_as_string().decode('utf-8')
 
 
-def generate_gcs_url(bucket_name, file_path):
-    bucket = storage_client.bucket(bucket_name)
-    blob = bucket.blob(file_path)
-    return blob.public_url
-
-
 def fetch_image_urls(bucket_name, base_path):
-    """Fetches image URLs from GCS. Ensures that the path ends correctly with 'images/'."""
+    """Fetches signed image URLs from GCS. Ensures that the path ends correctly with 'images/'."""
     if not base_path.endswith('images/'):
         base_path += 'images/'
     image_files = list_gcs_files(bucket_name, base_path)
-    return [generate_gcs_url(bucket_name, file_path) for file_path in image_files]
-
+    return [generate_signed_url(bucket_name, file_path) for file_path in image_files]
 
 
 def list_gcs_files(bucket_name, prefix):
+    """Lists files in GCS under a specific prefix."""
     blobs = storage_client.list_blobs(bucket_name, prefix=prefix)
     file_names = [blob.name for blob in blobs]
-    print(f"list_gcs_files(): Listing files under prefix {prefix}: {file_names}")
+    logging.info(f"list_gcs_files(): Listing files under prefix {prefix}: {file_names}")
     return file_names
 
 

@@ -110,6 +110,7 @@ def serve_content(category):
         generate_and_save_images("words", content['new_words'], images_base_path)
 
     image_urls = fetch_image_urls(bucket_name, images_base_path)
+
     word_image_dict = filter_sort_images(image_urls, 'words_')
     idea_image_dict = filter_sort_images(image_urls, 'ideas_')
     words_and_images = pair_content_with_images(content['new_words'], word_image_dict)
