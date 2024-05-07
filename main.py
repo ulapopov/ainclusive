@@ -11,20 +11,27 @@ app.secret_key = os.getenv('FLASK_SECRET_KEY', 'a_default_secret_key')
 # Global flags for (re)generation
 FORCE_REGENERATE_TEXT = False
 FORCE_REGENERATE_IMAGES = False
-READ_PDF = False  # Set to True if PDF reading and processing is needed
+READ_INPUT = True  # Set to True if input reading and processing is needed
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
         uploaded_file = request.files.get('file')
-        if uploaded_file and uploaded_file.filename.lower().endswith('.pdf'):
-            category = uploaded_file.filename[:-4]  # Extract category from filename without the .pdf extension
+        if uploaded_file:
+            filename = uploaded_file.filename.lower()
+            if filename.endswith('.pdf'):
+                category = filename[:-4]  # Extract category from filename without the .pdf extension
+            elif filename.endswith('.docx'):
+                category = filename[:-5]  # Extract category from filename without the .docx extension
+            else:
+                return render_template('index.html', error="Please select a PDF or Word file.")
+
             timestamp = datetime.utcnow().strftime('%Y%m%d%H%M%S')
             session['timestamp'] = timestamp  # Store the timestamp in the session
             logging.info(f"Timestamp set in session: {timestamp}")
 
-            if READ_PDF:
-                logging.info(f"Processing PDF for category {category} at timestamp {timestamp}")
+            if READ_INPUT:
+                logging.info(f"Processing file for category {category} at timestamp {timestamp}")
                 file_path = f"{category}/{timestamp}/original_text.txt"
                 extracted_content = extract_text_and_images(uploaded_file)
                 write_file(file_path, extracted_content, is_binary=False)
@@ -34,10 +41,10 @@ def index():
                 language = determine_language(original_text_content)
                 session['language'] = language
                 logging.info(f"Language set based on {category}/{timestamp}/original_text.txt content: {language}")
-
                 session['text_path'] = f"{category}/{timestamp}/"
                 session['image_path'] = f"{category}/{timestamp}/images/"
                 logging.info(f"Text path set to: {session['text_path']}, Image path set to: {session['image_path']}")
+
             else:
                 original_text_content = read_file(f"{category}/original_text.txt")
                 language = determine_language(original_text_content)
@@ -48,7 +55,6 @@ def index():
                 session['text_path'] = f"{category}/default/" if not FORCE_REGENERATE_TEXT else f"{category}/{timestamp}/"
                 session['image_path'] = f"{category}/images/" if not FORCE_REGENERATE_IMAGES else f"{category}/{timestamp}/images/"
                 logging.info(f"Text path set to: {session['text_path']}, Image path set to: {session['image_path']}")
-
 
                 # Copy original_text.txt to timestamped directory if text regeneration is forced
                 if FORCE_REGENERATE_TEXT:
@@ -67,7 +73,7 @@ def index():
 
             return redirect(url_for('serve_content', category=category))
         else:
-            return render_template('index.html', error="Please select a PDF file.")
+            return render_template('index.html', error="Please select a file.")
     return render_template('index.html')
 
 
