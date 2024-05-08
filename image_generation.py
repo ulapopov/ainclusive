@@ -11,9 +11,10 @@ def generate_and_save_images(type, prompts, gcp_bucket_folder_path):
     saved_images = []
 
     for index, prompt in enumerate(prompts, start=1):
+        print(index, prompt)
         card_name = f"{type}_{index}"  # Use type to differentiate image files
         image_params = {
-            "model": "dall-e-2",
+            "model": "dall-e-3",
             "n": 1,
             "size": "1024x1024",
             "prompt": (f"""Please generate a very simple and colorful image illustrating: {prompt}. 
@@ -31,7 +32,7 @@ def generate_and_save_images(type, prompts, gcp_bucket_folder_path):
             # Convert image to bytes and save using write_file from file_utils.py
             img_byte_arr = BytesIO()
             image.save(img_byte_arr, format='WebP')
-            img_byte_arr = img_byte_arr.getvalue()
+            img_byte_arr.seek(0)  # Move the file pointer to the beginning of the file
             write_file(filename, img_byte_arr, is_binary=True)  # Save to GCP
 
             print("Image saved as", filename)

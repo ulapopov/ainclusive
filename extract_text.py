@@ -5,6 +5,7 @@ from pdf2image import convert_from_bytes
 import pytesseract
 from PIL import Image
 from docx.document import Document
+from imports import logging
 
 
 def extract_text_and_images(uploaded_file):
@@ -69,7 +70,7 @@ def extract_from_word(word_file):
                     pytesseract.image_to_string(img, lang='heb+eng') + "\n"
         except Exception as e:
             # Handle any exceptions that may occur during image extraction
-            print(f"Error extracting image {index + 1}: {e}")
+            logging.error(f"Error extracting image {index + 1}: {e}")
 
-    print(extracted_text)
+    logging.info(extracted_text)
     return extracted_text

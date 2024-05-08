@@ -11,7 +11,7 @@ app.secret_key = os.getenv('FLASK_SECRET_KEY', 'a_default_secret_key')
 # Global flags for (re)generation
 FORCE_REGENERATE_TEXT = False
 FORCE_REGENERATE_IMAGES = False
-READ_INPUT = True  # Set to True if input reading and processing is needed
+READ_INPUT = False  # Set to True if input reading and processing is needed
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
