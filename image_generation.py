@@ -17,8 +17,10 @@ def generate_and_save_images(type, prompts, gcp_bucket_folder_path):
             "model": "dall-e-3",
             "n": 1,
             "size": "1024x1024",
-            "prompt": (f"""Please generate a very simple and colorful image illustrating: {prompt}. 
-                        Style: Realistic, minimalistic"""),
+            "prompt": (f"""Generate an image that could be mistaken for a camera-taken photograph, illustrating: '{prompt}'. 
+            The image should focus on a single subject, capturing it with the clarity, detail, and authenticity typical of 
+            a high-quality nature documentary photograph. Ensure the background is uncluttered to highlight the subject effectively. 
+            This image is intended for educational use and must appear completely realistic, as if observing the subject in its natural habitat. """),
             "user": "myName",
             "response_format": "b64_json"
         }

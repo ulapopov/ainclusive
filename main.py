@@ -9,9 +9,9 @@ from extract_text import extract_text_and_images
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'a_default_secret_key')
 
 # Global flags for (re)generation
-FORCE_REGENERATE_TEXT = False
-FORCE_REGENERATE_IMAGES = False
-READ_INPUT = False  # Set to True if input reading and processing is needed
+FORCE_REGENERATE_TEXT = True
+FORCE_REGENERATE_IMAGES = True
+READ_INPUT = True  # Set to True if input reading and processing is needed
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -100,9 +100,19 @@ def serve_content(category):
     # Check existence of text and generate if needed
     if FORCE_REGENERATE_TEXT:
         logging.info("Regenerating text content...")
-        # Extract text from existing file if needed for generation
-        existing_text = read_file(f"{category}/original_text.txt")  # Adjust as necessary to fit your file structure
-        generate_text_content(existing_text, category)  # Adjusted to match your function signature
+        # Look for original_text.txt in the timestamped folder first
+        timestamped_path = f"{category}/{timestamp}/original_text.txt"
+        if content_exists(bucket_name, timestamped_path):
+            existing_text = read_file(timestamped_path)
+        else:
+            # If not found in the timestamped folder, look in the category folder
+            category_path = f"{category}/original_text.txt"
+            if content_exists(bucket_name, category_path):
+                existing_text = read_file(category_path)
+            else:
+                logging.warning("No original_text.txt found in either timestamped or category folder.")
+                existing_text = ""
+        generate_text_content(existing_text, category)
 
     content = read_content_files(text_base_path)
     if not content:
