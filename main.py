@@ -4,14 +4,16 @@ from file_utils import read_content_files, write_file, read_file, determine_lang
 from text_generation import generate_text_content
 from image_generation import generate_and_save_images
 from extract_text import extract_text_and_images
+from games import generate_games
 
 # Ensure session is available
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'a_default_secret_key')
 
 # Global flags for (re)generation
 FORCE_REGENERATE_TEXT = True
-FORCE_REGENERATE_IMAGES = True
-READ_INPUT = True  # Set to True if input reading and processing is needed
+FORCE_REGENERATE_IMAGES = False
+FORCE_REGENERATE_GAMES = False
+READ_INPUT = False  # Set to True if input reading and processing is needed
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
@@ -43,7 +45,11 @@ def index():
                 logging.info(f"Language set based on {category}/{timestamp}/original_text.txt content: {language}")
                 session['text_path'] = f"{category}/{timestamp}/"
                 session['image_path'] = f"{category}/{timestamp}/images/"
-                logging.info(f"Text path set to: {session['text_path']}, Image path set to: {session['image_path']}")
+                session['game_path'] = f"{category}/{timestamp}/games/"
+                logging.info(f"Text path set to: {session['text_path']}, "
+                             f"Image path set to: {session['image_path']}, "
+                             f"Game path set to: {session['game_path']}")
+
 
             else:
                 original_text_content = read_file(f"{category}/original_text.txt")
@@ -54,7 +60,12 @@ def index():
                 # Set paths depending on whether to regenerate text or images
                 session['text_path'] = f"{category}/default/" if not FORCE_REGENERATE_TEXT else f"{category}/{timestamp}/"
                 session['image_path'] = f"{category}/images/" if not FORCE_REGENERATE_IMAGES else f"{category}/{timestamp}/images/"
-                logging.info(f"Text path set to: {session['text_path']}, Image path set to: {session['image_path']}")
+                session[
+                    'game_path'] = f"{category}/games/" if not FORCE_REGENERATE_GAMES else f"{category}/{timestamp}/games/"
+                logging.info(
+                    f"Text path set to: {session['text_path']}, "
+                    f"Image path set to: {session['image_path']}, "
+                    f"Game path set to: {session['game_path']}")
 
                 # Copy original_text.txt to timestamped directory if text regeneration is forced
                 if FORCE_REGENERATE_TEXT:
@@ -94,8 +105,11 @@ def serve_content(category):
     # Determine base paths based on regeneration flags
     text_base_path = f'{category}/{timestamp}/' if FORCE_REGENERATE_TEXT else f'{category}/'
     images_base_path = f'{category}/{timestamp}/images/' if FORCE_REGENERATE_IMAGES else f'{category}/images/'
+    games_base_path = f'{category}/{timestamp}/games/' if FORCE_REGENERATE_GAMES else f'{category}/games/'
 
-    logging.info(f"Checking content in base path: {text_base_path} and images path: {images_base_path}")
+    logging.info(
+        f"Checking content in base path: {text_base_path}, images path: {images_base_path}, "
+        f"and games path: {games_base_path}")
 
     # Check existence of text and generate if needed
     if FORCE_REGENERATE_TEXT:
@@ -131,6 +145,13 @@ def serve_content(category):
     idea_image_dict = filter_sort_images(image_urls, 'ideas_')
     words_and_images = pair_content_with_images(content['new_words'], word_image_dict)
     ideas_and_images = pair_content_with_images(content['major_ideas'], idea_image_dict)
+
+    # Generate games if required
+    if FORCE_REGENERATE_GAMES:
+        logging.info("Regenerating games...")
+        generate_games(content['original_text'], content['new_words'], content['words_definitions'], image_urls,
+                       content['questions'], content['choices'], content['statements'], content['headers'],
+                       content['labels'], games_base_path)
 
     return render_template('display.html', words_and_images=words_and_images, text=content['original_text'],
                            ideas_and_images=ideas_and_images, summaries='\n'.join(content['text_summary']),

@@ -1,11 +1,11 @@
 from file_utils import write_file, determine_language, language_map
 from image_generation import generate_and_save_images
-from imports import client, datetime, session, logging, openai, clean_text
+from imports import client, datetime, session, logging, openai, clean_text, model, fetch_image_urls, bucket_name
 
 
 def generate_summary(text, language):
     summary_response = client.chat.completions.create(
-        model="gpt-4-turbo-preview",
+        model=model,
         messages=[{"role": "system", "content": f"Please rewrite the following text in {language} using very simple words, "
                                                 f"suitable for a 3-4 year old toddler. Use short sentences and common, everyday words that are easy to understand in {language}. "
                                                 f"Ensure the grammar is correct and the structure is straightforward. Use the same language as the source ({language}). "
@@ -22,7 +22,9 @@ def identify_main_ideas(text, language):
     prompt_english = f"Identify 3-4 main ideas in the text posted below. For each main idea, " \
                      f"provide a concise summary that is 1-2 sentences long. Use simple words suitable for a 3-4 year old toddler, " \
                      f"avoiding complex phrases or terminology. The summaries should clearly reflect key points from the text " \
-                     f"and be easy to understand. Ensure the grammar is correct. Use the same language as the source (English). " \
+                     f"and be easy to understand. Ensure the grammar is correct. Do not include titles for each idea." \
+                     f"Separate each summary with a bullet point." \
+                     f"Use the same language as the source (English). " \
                      f"The text: {text}"
     prompt_hebrew = (
         f"זהה 3-4 רעיונות עיקריים בטקסט שלמטה וספק תקציר תמציתי של משפט או שניים לכל רעיון. "
@@ -39,7 +41,7 @@ def identify_main_ideas(text, language):
     while attempt_count < 3:
         try:
             main_ideas_response = client.chat.completions.create(
-                model="gpt-4-turbo-preview",
+                model=model,
                 messages=[{"role": "system", "content": prompt}],
                 temperature=0,
                 max_tokens=4096,
@@ -64,7 +66,7 @@ def identify_main_ideas(text, language):
 
 def identify_words_needing_explanation(text, language):
     words_response = client.chat.completions.create(
-        model="gpt-4-turbo-preview",
+        model=model,
         messages=[{"role": "system",
                    "content": f"Identify 5-10 words in the following text that might be too difficult for a toddler to understand. "
                               f"For each word, provide a very simple explanation or synonym in {language}. "
@@ -82,6 +84,61 @@ def identify_words_needing_explanation(text, language):
     return words
 
 
+def generate_questions(text, language):
+    questions_response = client.chat.completions.create(
+        model=model,
+        messages=[{"role": "system", "content": f"Generate 5 simple questions based on the following text. The questions should be suitable for a 3-4 year old toddler and test their understanding of the main ideas in the text. Use {language} for the questions. Here is the text: {text}"}],
+        temperature=0.7,
+        max_tokens=4096,
+    )
+    questions = questions_response.choices[0].message.content.strip().split("\n")
+    return questions
+
+def generate_choices(questions, language):
+    choices = []
+    for question in questions:
+        choices_response = client.chat.completions.create(
+            model=model,
+            messages=[{"role": "system", "content": f"Generate 2 plausible answer choices for the following question in {language}. The choices should be suitable for a 3-4 year old toddler. Here is the question: {question}"}],
+            temperature=0.7,
+            max_tokens=4096,
+        )
+        choices.append(choices_response.choices[0].message.content.strip().split("\n"))
+    return choices
+
+def generate_statements(text, language):
+    statements_response = client.chat.completions.create(
+        model=model,
+        messages=[{"role": "system", "content": f"Generate 5 simple true or false statements based on the following text. The statements should be suitable for a 3-4 year old toddler and test their understanding of the main ideas in the text. Use {language} for the statements. Here is the text: {text}"}],
+        temperature=0.7,
+        max_tokens=4096,
+    )
+    statements = statements_response.choices[0].message.content.strip().split("\n")
+    return statements
+
+def generate_headers(main_ideas, language):
+    headers_response = client.chat.completions.create(
+        model=model,
+        messages=[{"role": "system", "content": f"Generate 3-4 table headers based on the following main ideas from a text. The headers should be suitable for a 3-4 year old toddler and help categorize key information related to the main ideas. Use {language} for the headers. Here are the main ideas: {main_ideas}"}],
+        temperature=0.7,
+        max_tokens=4096,
+    )
+    headers = headers_response.choices[0].message.content.strip().split("\n")
+    return headers
+
+
+def generate_labels(images, language):
+    labels = []
+    for image_url in images:
+        labels_response = client.chat.completions.create(
+            model=model,
+            messages=[{"role": "system", "content": f"Generate 3-4 simple labels for the image at the following URL: {image_url}. The labels should be suitable for a 3-4 year old toddler and describe key elements or concepts represented in the image. Use {language} for the labels."}],
+            temperature=0.7,
+            max_tokens=4096,
+        )
+        labels.append(labels_response.choices[0].message.content.strip().split("\n"))
+    return labels
+
 def generate_text_content(text, category):
     timestamp = session.get('timestamp')
     if not timestamp:
@@ -98,15 +155,34 @@ def generate_text_content(text, category):
         cleaned_major_ideas = clean_text(major_ideas)
         new_words = identify_words_needing_explanation(summary, language)
         cleaned_new_words = clean_text(new_words)
-    except openai.APIError as e:  # This captures all client-related issues including bad requests, rate limits, etc.
+        questions = generate_questions(summary, language)
+        choices = generate_choices(questions, language)
+        statements = generate_statements(summary, language)
+        headers = generate_headers(cleaned_major_ideas, language)
+
+        # Fetch the image URLs using the fetch_image_urls function from imports.py
+        image_urls = fetch_image_urls(bucket_name, f"{category}/{timestamp}/images/")
+        labels = generate_labels(image_urls, language)
+
+    except openai.APIError as e:
         logging.error(f"OpenAI API is currently not accessible. Error: {e}")
         summary = "Summary not available due to API access issue."
         main_ideas = "Main ideas could not be generated."
         terms = "Terms explanation not accessible."
+        questions = []
+        choices = []
+        statements = []
+        headers = []
+        labels = []
 
-    # Save summary, main ideas, and terms in unique path
+    # Save generated content in unique path
     write_file(f"{unique_path}text_summary.txt", summary)
     write_file(f"{unique_path}major_ideas.txt", cleaned_major_ideas)
     write_file(f"{unique_path}new_words.txt", cleaned_new_words)
+    write_file(f"{unique_path}questions.txt", "\n".join(questions))
+    write_file(f"{unique_path}choices.txt", "\n".join(["\n".join(choice) for choice in choices]))
+    write_file(f"{unique_path}statements.txt", "\n".join(statements))
+    write_file(f"{unique_path}headers.txt", "\n".join(headers))
+    write_file(f"{unique_path}labels.txt", "\n".join(["\n".join(label) for label in labels]))
 
     logging.info(f"Text content generated and saved to {unique_path}")

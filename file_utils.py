@@ -31,7 +31,6 @@ def write_file(file_path, content, is_binary=False):
         logging.error(f"write_file(): Failed to write file {bucket_name}/{file_path}: {e}")
 
 
-
 def read_content_files(base_path):
     """Reads content from files and returns them."""
     logging.basicConfig(level=logging.INFO)
