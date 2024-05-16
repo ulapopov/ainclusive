@@ -11,4 +11,4 @@ langdetect
 pdf2image==1.16.0
 pytesseract==0.3.9
 python-docx
-PyMuPDF 1.24.2
+PyMuPD==1.24.2
