@@ -57,4 +57,6 @@ Test the application locally to ensure all parts are functioning correctly befor
 - **Developer:** Uliana Popov
 - **Email:** ula.popov@gmail.com
 
+## No animals and no coders were harmed during writing of this code
+
 
