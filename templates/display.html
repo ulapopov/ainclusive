@@ -81,8 +81,8 @@
 
             <div class="words">
                 <h2>New Words</h2>
-                {% for word, image_url in words_and_images %}
-                    <p>{{ word }}</p>
+                {% for word, definition, image_url in words_definitions_images %}
+                    <p><strong>{{ word }}:</strong> {{ definition }}</p>
                     {% if image_url != 'No Image Available' %}
                         <img src="{{ image_url }}" alt="Word Image" style="width: 200px; height: auto; cursor: pointer;" onclick="window.open(this.src, '_blank');">
                     {% endif %}
@@ -92,16 +92,18 @@
             <!-- Games Section -->
             <div class="games">
                 <h2>Games</h2>
-                <!-- Game 1 -->
-                <div class="game">
-                    <h3>Fill-in-the-Blank</h3>
-                    <pre>{{ game1_txt | safe }}</pre>
-                </div>
-                <!-- Game 2 -->
-                <div class="game">
-                    <h3>Odd One Out</h3>
-                    <pre>{{ game2_txt | safe }}</pre>
-                </div>
+                <ul>
+                    <li><a href="{{ matching_game_url }}" target="_blank">Matching Game</a></li>
+                    <li><a href="{{ fill_in_blank_url }}" target="_blank">Fill-in-the-Blank</a></li>
+                    <li><a href="{{ cut_paste_url }}" target="_blank">Cut and Paste</a></li>
+                    <li><a href="{{ table_completion_url }}" target="_blank">Table Completion</a></li>
+                    <li><a href="{{ coloring_page_url }}" target="_blank">Coloring Page</a></li>
+                    <li><a href="{{ labeling_activity_url }}" target="_blank">Labeling Activity</a></li>
+                    <li><a href="{{ sequencing_activity_url }}" target="_blank">Sequencing Activity</a></li>
+                    <li><a href="{{ short_answer_questions_url }}" target="_blank">Short Answer Questions</a></li>
+                    <li><a href="{{ true_false_questions_url }}" target="_blank">True/False Questions</a></li>
+                    <li><a href="{{ multiple_choice_questions_url }}" target="_blank">Multiple Choice Questions</a></li>
+                </ul>
             </div>
         </div>
     </div>

@@ -1,5 +1,5 @@
 from imports import os, datetime, app, socketio, client, request, render_template, redirect, url_for, session, bucket_name, logging
-from imports import fetch_image_urls, filter_sort_images, pair_content_with_images, content_exists
+from imports import fetch_image_urls, filter_sort_images, pair_content_with_images, content_exists, generate_signed_url
 from file_utils import read_content_files, write_file, read_file, determine_language
 from text_generation import generate_text_content
 from image_generation import generate_and_save_images
@@ -10,7 +10,7 @@ from games import generate_games
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'a_default_secret_key')
 
 # Global flags for (re)generation
-FORCE_REGENERATE_TEXT = True
+FORCE_REGENERATE_TEXT = False
 FORCE_REGENERATE_IMAGES = False
 FORCE_REGENERATE_GAMES = False
 READ_INPUT = False  # Set to True if input reading and processing is needed
@@ -49,7 +49,6 @@ def index():
                 logging.info(f"Text path set to: {session['text_path']}, "
                              f"Image path set to: {session['image_path']}, "
                              f"Game path set to: {session['game_path']}")
-
 
             else:
                 original_text_content = read_file(f"{category}/original_text.txt")
@@ -143,19 +142,59 @@ def serve_content(category):
 
     word_image_dict = filter_sort_images(image_urls, 'words_')
     idea_image_dict = filter_sort_images(image_urls, 'ideas_')
-    words_and_images = pair_content_with_images(content['new_words'], word_image_dict)
+
+    words_definitions_images = []
+
+    if 'new_words' in content and 'words_definitions' in content:
+        logging.info(f"Found {len(content['new_words'])} new words and {len(content['words_definitions'])} definitions")
+        for i, (word, definition) in enumerate(zip(content['new_words'], content['words_definitions'])):
+            image = word_image_dict.get(i + 1, 'No Image Available')
+            words_definitions_images.append((word, definition, image))
+            logging.info(f"Processed word {i + 1}: {word}, definition: {definition}, image: {image}")
+    else:
+        logging.warning("'new_words' or 'words_definitions' not found in content.")
+
+    logging.info(f"Total words processed: {len(words_definitions_images)}")
+    for word, definition, image in words_definitions_images:
+        logging.info(f"Word: {word}, Definition: {definition}, Image: {image}")
+
     ideas_and_images = pair_content_with_images(content['major_ideas'], idea_image_dict)
 
     # Generate games if required
     if FORCE_REGENERATE_GAMES:
         logging.info("Regenerating games...")
-        generate_games(content['original_text'], content['new_words'], content['words_definitions'], image_urls,
-                       content['questions'], content['choices'], content['statements'], content['headers'],
-                       content['labels'], games_base_path)
+        words_definitions = content.get('words_definitions', [])  # Get the value or use an empty list as default
+        generate_games(content['original_text'], content['new_words'], words_definitions, image_urls,
+                       content.get('questions', []), content.get('choices', []), content.get('statements', []),
+                       content.get('headers', []), content.get('labels', []), games_base_path)
 
-    return render_template('display.html', words_and_images=words_and_images, text=content['original_text'],
-                           ideas_and_images=ideas_and_images, summaries='\n'.join(content['text_summary']),
-                           game1_txt='\n'.join(content['fillin']), game2_txt='\n'.join(content['not_matching']),
+    # Generate URLs for the game files
+    matching_game_url = generate_signed_url(bucket_name, f"{games_base_path}matching_game.html")
+    fill_in_blank_url = generate_signed_url(bucket_name, f"{games_base_path}fill_in_the_blank.html")
+    cut_paste_url = generate_signed_url(bucket_name, f"{games_base_path}cut_and_paste.html")
+    table_completion_url = generate_signed_url(bucket_name, f"{games_base_path}table_completion.html")
+    coloring_page_url = generate_signed_url(bucket_name, f"{games_base_path}coloring_page.html")
+    labeling_activity_url = generate_signed_url(bucket_name, f"{games_base_path}labeling_activity.html")
+    sequencing_activity_url = generate_signed_url(bucket_name, f"{games_base_path}sequencing_activity.html")
+    short_answer_questions_url = generate_signed_url(bucket_name, f"{games_base_path}short_answer_questions.html")
+    true_false_questions_url = generate_signed_url(bucket_name, f"{games_base_path}true_false_questions.html")
+    multiple_choice_questions_url = generate_signed_url(bucket_name, f"{games_base_path}multiple_choice_questions.html")
+
+    return render_template('display.html',
+                           words_definitions_images=words_definitions_images,
+                           text=content['original_text'],
+                           ideas_and_images=ideas_and_images,
+                           summaries='\n'.join(content['text_summary']),
+                           matching_game_url=matching_game_url,
+                           fill_in_blank_url=fill_in_blank_url,
+                           cut_paste_url=cut_paste_url,
+                           table_completion_url=table_completion_url,
+                           coloring_page_url=coloring_page_url,
+                           labeling_activity_url=labeling_activity_url,
+                           sequencing_activity_url=sequencing_activity_url,
+                           short_answer_questions_url=short_answer_questions_url,
+                           true_false_questions_url=true_false_questions_url,
+                           multiple_choice_questions_url=multiple_choice_questions_url,
                            align_class=align_class)
 
 

@@ -2,8 +2,10 @@ import logging
 import re
 import os
 import json
+import requests
 from datetime import datetime, timedelta
 from PIL import Image as PILImage
+from PIL import ImageDraw, ImageFont
 import openai
 from openai import OpenAI
 from flask import Flask, render_template, request, send_from_directory, redirect, url_for, session
@@ -31,6 +33,13 @@ client = OpenAI(
 
 bucket_name = 'ula_content'  # Global bucket name used across your application
 model = "gpt-4o"
+
+
+def load_font(font_name, size):
+    try:
+        return ImageFont.truetype(font_name, size)
+    except OSError:
+        return ImageFont.load_default()
 
 
 def get_gcp_credentials():
@@ -66,11 +75,21 @@ except Exception as e:
 
 def clean_text(text):
     """Cleans the text by removing numbers, extra spaces, and multiple newlines."""
-    # Remove numbers and extra spaces
-    cleaned_text = re.sub(r'\d+\.\s+', '', text)  # This regex removes numbers followed by dots and spaces
-    # Replace multiple newlines with a single newline (optional, based on your needs)
-    cleaned_text = re.sub(r'\n+', '\n', cleaned_text)
-    return cleaned_text
+    if isinstance(text, list):
+        cleaned_text = []
+        for item in text:
+            # Remove numbers and extra spaces
+            cleaned_item = re.sub(r'\d+\.\s+', '', item)  # This regex removes numbers followed by dots and spaces
+            # Replace multiple newlines with a single newline (optional, based on your needs)
+            cleaned_item = re.sub(r'\n+', '\n', cleaned_item)
+            cleaned_text.append(cleaned_item)
+        return cleaned_text
+    else:
+        # Remove numbers and extra spaces
+        cleaned_text = re.sub(r'\d+\.\s+', '', text)  # This regex removes numbers followed by dots and spaces
+        # Replace multiple newlines with a single newline (optional, based on your needs)
+        cleaned_text = re.sub(r'\n+', '\n', cleaned_text)
+        return cleaned_text
 
 
 def generate_signed_url(bucket_name, blob_name, expiration=3600):

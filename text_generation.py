@@ -80,8 +80,26 @@ def identify_words_needing_explanation(text, language):
         temperature=0,
         max_tokens=4096,
     )
-    words = words_response.choices[0].message.content.strip()
-    return words
+    words_and_definitions = words_response.choices[0].message.content.strip()
+    logging.info(f"Received response from the model: {words_and_definitions}")
+
+    # Separate words and definitions
+    words = []
+    definitions = []
+    for line in words_and_definitions.split('\n'):
+        parts = line.split(' - ', 1)
+        if len(parts) != 2:
+            parts = line.split(': ', 1)
+
+        if len(parts) == 2:
+            word = parts[0].strip().strip('*')  # Remove asterisks and leading/trailing whitespace
+            definition = parts[1].strip()
+            words.append(word)
+            definitions.append(definition)
+        else:
+            logging.warning(f"Skipping line due to unexpected format: {line}")
+
+    return words, definitions
 
 
 def generate_questions(text, language):
@@ -153,8 +171,10 @@ def generate_text_content(text, category):
         summary = generate_summary(text, language)
         major_ideas = identify_main_ideas(summary, language)
         cleaned_major_ideas = clean_text(major_ideas)
-        new_words = identify_words_needing_explanation(summary, language)
+        new_words, words_definitions = identify_words_needing_explanation(summary, language)
+        logging.info(f"New words generated {new_words}")
         cleaned_new_words = clean_text(new_words)
+        logging.info(f"Cleaned new words generated {cleaned_new_words}")
         questions = generate_questions(summary, language)
         choices = generate_choices(questions, language)
         statements = generate_statements(summary, language)
@@ -167,8 +187,9 @@ def generate_text_content(text, category):
     except openai.APIError as e:
         logging.error(f"OpenAI API is currently not accessible. Error: {e}")
         summary = "Summary not available due to API access issue."
-        main_ideas = "Main ideas could not be generated."
-        terms = "Terms explanation not accessible."
+        major_ideas = "Main ideas could not be generated."
+        new_words = "Terms explanation not accessible."
+        words_definitions = []
         questions = []
         choices = []
         statements = []
@@ -179,6 +200,7 @@ def generate_text_content(text, category):
     write_file(f"{unique_path}text_summary.txt", summary)
     write_file(f"{unique_path}major_ideas.txt", cleaned_major_ideas)
     write_file(f"{unique_path}new_words.txt", cleaned_new_words)
+    write_file(f"{unique_path}words_definitions.txt", "\n".join(words_definitions))
     write_file(f"{unique_path}questions.txt", "\n".join(questions))
     write_file(f"{unique_path}choices.txt", "\n".join(["\n".join(choice) for choice in choices]))
     write_file(f"{unique_path}statements.txt", "\n".join(statements))
