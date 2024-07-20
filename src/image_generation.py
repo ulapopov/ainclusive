@@ -1,0 +1,46 @@
+from src.imports import client
+from PIL import Image as PILImage
+from src.file_utils import write_file
+import base64
+from io import BytesIO
+import time
+
+
+def generate_and_save_images(image_type: str, prompts: list[str], gcp_bucket_folder_path: str):
+    print(prompts)
+    print(len(prompts))
+    saved_images = []
+
+    for index, prompt in enumerate(prompts, start=1):
+        print(index, prompt)
+        card_name = f"{image_type}_{index}"  # Use type to differentiate image files
+        image_params = {
+            "model": "dall-e-3",
+            "n": 1,
+            "size": "1024x1024",
+            "prompt": (f"""Generate an image that could be mistaken for a camera-taken photograph, illustrating: '{prompt}'. 
+            The image should focus on a single subject, capturing it with the clarity, detail, and authenticity typical of 
+            a high-quality nature documentary photograph. Ensure the background is uncluttered to highlight the subject effectively. 
+            This image is intended for educational use and must appear completely realistic, as if observing the subject in its natural habitat. """),
+            "user": "myName",
+            "response_format": "b64_json"
+        }
+        try:
+            images_response = client.images.generate(**image_params)
+            base64_image = images_response.data[0].model_dump()['b64_json']
+            image = PILImage.open(BytesIO(base64.b64decode(base64_image)))
+            filename = f"{gcp_bucket_folder_path}{card_name}.webp"
+            print(filename)
+
+            # Convert image to bytes and save using write_file from file_utils.py
+            img_byte_arr = BytesIO()
+            image.save(img_byte_arr, format='WebP')
+            img_byte_arr.seek(0)  # Move the file pointer to the beginning of the file
+            write_file(file_path=filename, content=img_byte_arr, is_binary=True)  # Save to GCP
+
+            print("Image saved as", filename)
+            saved_images.append(filename)  # Store the filename for later use
+            time.sleep(12)  # Adjust sleep time based on your API rate limit
+        except Exception as e:
+            print(f"An error occurred: {e}")
+    return saved_images

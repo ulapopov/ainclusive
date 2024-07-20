@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/AInclusive.iml" filepath="$PROJECT_DIR$/.idea/AInclusive.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/ainclusive.iml" filepath="$PROJECT_DIR$/.idea/ainclusive.iml" />
     </modules>
   </component>
 </project>
